@@ -127,6 +127,31 @@ function QuestionList({ questions, setquestions, downloadList, setDownloadList }
     }
     return false;
   }
+
+
+  async function fetch_requests(url)
+  {
+    const dat=await fetch(url)
+    .then((response) => {
+      return response.json(); // Parse the JSON response
+    })
+    .then((data) => {
+      // console.log(data);
+      return data // Process the data received from the server
+    })
+    .catch((error) => {
+      console.error(
+        "There was a problem with the fetch operation:",
+        error
+      );
+    });
+
+    return dat;
+  }
+
+
+
+
   const searchDB = () => {
 
     // setDisplayFlag(false)
@@ -149,30 +174,56 @@ function QuestionList({ questions, setquestions, downloadList, setDownloadList }
 
     const fetchQuestions = async () => {
       try {
-        const db = getFirestore();
-        const questionsRef = collection(db, 'questions');
-        const querySnapshot = await getDocs(questionsRef);
+        // Make a GET request using fetch
+        
+         let questionList = [];
+        if ((selectedTag && selectedDifficulty)) {
+          console.log(selectedTag,selectedDifficulty);
+          // if ((questionData.selectedTags.includes(String(selectedTag.label)) && questionData.difficulty == selectedDifficulty))
+           const data = await fetch_requests(`http://127.0.0.1:3001/api/questions?tag=${selectedTag.label}&difficulty=${selectedDifficulty}`)
+          //  console.log(data.data.questions);
+            questionList=data.data.questions;
+          }
+          else if (selectedTag) {
+            const data = await fetch_requests(`http://127.0.0.1:3001/api/questions?tag=${selectedTag.label}`);
+            // console.log(data.data.questions);
+            questionList=data.data.questions;
 
-        const questionList = [];
-        querySnapshot.forEach((doc) => {
-          const questionData = doc.data();
-          // console.log(questionData.selectedTags);
-          if ((selectedTag && selectedDifficulty)) {
-            if ((questionData.selectedTags.includes(String(selectedTag.label)) && questionData.difficulty == selectedDifficulty))
-              questionList.push(questionData);
           }
-          else if (selectedTag && questionData.selectedTags.includes(String(selectedTag.label))) {
-            questionList.push(questionData);
+          else if (selectedDifficulty ) {
+            const data = await fetch_requests(`http://127.0.0.1:3001/api/questions?difficulty=${selectedDifficulty}`);
+            // console.log(data.data.questions);
+            questionList=data.data.questions;
           }
-          else if (selectedDifficulty && questionData.difficulty === selectedDifficulty) {
-            questionList.push(questionData);
-            // console.log('hii');
-          }
-        });
-        setquestions(questionList);
+
+
+          console.log(questionList);
+          setquestions(questionList);
+
+
+        // const db = getFirestore();
+        // const questionsRef = collection(db, 'questions');
+        // const querySnapshot = await getDocs(questionsRef);
+
+        // querySnapshot.forEach((doc) => {
+        //   const questionData = doc.data();
+        //   console.log(questionData);
+          // if ((selectedTag && selectedDifficulty)) {
+          //   if ((questionData.selectedTags.includes(String(selectedTag.label)) && questionData.difficulty == selectedDifficulty))
+          //     questionList.push(questionData);
+          // }
+          // else if (selectedTag && questionData.selectedTags.includes(String(selectedTag.label))) {
+          //   questionList.push(questionData);
+          // }
+          // else if (selectedDifficulty && questionData.difficulty === selectedDifficulty) {
+          //   questionList.push(questionData);
+          //   // console.log('hii');
+          // }
+        // });
+
         // console.log(questionList);
       } catch (error) {
-        console.error('Error fetching questions: ', error);
+        console.error("Error fetching questions: ", error);
       }
     };
 

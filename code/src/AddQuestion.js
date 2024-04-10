@@ -149,22 +149,61 @@ function Form() {
 
     const formData = constructFormData(CorrectOption, Difficulty, selectedtags);
 
-    console.log(formData);
+    if (formData.correctAnswer==1)
+    formData.correctAnswer='a';
+    else if(formData.correctAnswer==2)
+    formData.correctAnswer='b';
+    else if(formData.correctAnswer==3)
+    formData.correctAnswer='c';
+    else if(formData.correctAnswer==4)
+    formData.correctAnswer='d';
+    
+
+    console.log(typeof formData);
     // CODE TO SUBMIT THE FORM DATA TO THE SERVER
+    const list_to_be_sent=[]
+    list_to_be_sent.push(formData);
 
-    const uploadToFirestore = async () => {
-      try {
-        const db = getFirestore(app);
-        const myCollection = collection(db, 'questions');
-        const docRef = await addDoc(myCollection, formData);
 
-        console.log('Document written with ID: ', docRef.id);
-      } catch (error) {
-        console.error('Error adding document: ', error);
-      }
-    };
 
-    uploadToFirestore();
+
+  fetch('http://127.0.0.1:3001/api/questions', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify(list_to_be_sent)
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+    return response.json();
+  })
+  .then(data => {
+    console.log('Success:', data);
+  })
+  .catch(error => {
+    console.error('Error:', error);
+  });
+
+  // console.log();
+
+
+
+    // const uploadToFirestore = async() => {
+    //   try {
+    //     const db = getFirestore(app);
+    //     const myCollection = collection(db, 'questions'); 
+    //     const docRef = await addDoc(myCollection, formData);
+
+    //     console.log('Document written with ID: ', docRef.id);
+    //   } catch (error) {
+    //     console.error('Error adding document: ', error);
+    //   }
+    // };
+
+    // uploadToFirestore();
 
     setselectedtags([]);
     setTags(initialTags);

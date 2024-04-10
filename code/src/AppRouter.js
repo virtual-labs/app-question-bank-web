@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import QuestionList from './questionlist.js';
+import QuestionList from './QuestionList';
 import Quiz from './Quiz';
 import AddToQueueSharption from './AddQuestion';
 import DownloadList from './downloadlist';
