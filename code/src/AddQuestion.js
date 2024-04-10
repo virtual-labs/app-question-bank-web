@@ -18,11 +18,14 @@ import { Link } from 'react-router-dom';
 import { Box, CircularProgress, Container, Paper } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { initialTags } from './tagsColors';
-import {firebaseConfig} from "./firebaseConfig.js"
+import { firebaseConfig } from "./firebaseConfig.js"
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+import MarkdownRenderer from './MarkdownRenderer';
+
 
 // Firestore
 import { getFirestore, collection, addDoc } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js';
+import { Center } from '@chakra-ui/react';
 const app = initializeApp(firebaseConfig);
 
 const EASY_DIFFICULTY = 10;
@@ -47,7 +50,6 @@ function Form() {
 
   const [Difficulty, setDifficulty] = React.useState('');
   const [CorrectOption, setCorrectOption] = React.useState('');
-
   const [errorMessage, setErrorMessage] = React.useState('');
 
   const handleComboBoxChange = (event, value, comboBoxId) => {
@@ -146,14 +148,14 @@ function Form() {
     }
 
     const formData = constructFormData(CorrectOption, Difficulty, selectedtags);
-    
+
     console.log(formData);
     // CODE TO SUBMIT THE FORM DATA TO THE SERVER
 
-    const uploadToFirestore = async() => {
+    const uploadToFirestore = async () => {
       try {
         const db = getFirestore(app);
-        const myCollection = collection(db, 'questions'); 
+        const myCollection = collection(db, 'questions');
         const docRef = await addDoc(myCollection, formData);
 
         console.log('Document written with ID: ', docRef.id);
@@ -179,6 +181,7 @@ function Form() {
     setExplanationC('');
     setExplanationD('');
     setErrorMessage('');
+    setComboBoxCount(1);
     alert('Question submitted successfully');
   };
 
@@ -192,7 +195,6 @@ function Form() {
     >
       <div>
         <h3>Enter Question</h3>
-        <h5>press Tab to generate Preview</h5>
         <TextField
           id="Question"
           label="Enter Question"
@@ -200,141 +202,178 @@ function Form() {
           multiline
           rows={2}
           fullWidth
-          sx={{ width: 600}}
+          sx={{ width: 600 }}
           required
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
         />
+        <div>
+          <h4>Preview</h4>
+          <MarkdownRenderer maxLines={5} source={question} />
+        </div>
       </div>
       <Stack spacing={2}>
         <div>
           <h4>Option A</h4>
           <TextField
-          id="OptionA"
-          label="Option A"
-          placeholder="Enter Option A"
-          multiline
-          rows={2}
-          fullWidth
-          sx={{ width: 600}}
-          required
-          value={optionA}
-          onChange={(e) => setOptionA(e.target.value)}
-        />
+            id="OptionA"
+            label="Option A"
+            placeholder="Enter Option A"
+            multiline
+            rows={2}
+            fullWidth
+            sx={{ width: 600 }}
+            required
+            value={optionA}
+            onChange={(e) => setOptionA(e.target.value)}
+          />
+          <div>
+            <h4>Preview</h4>
+            <MarkdownRenderer maxLines={5} source={optionA} />
+          </div>
         </div>
         <div>
           <h4>Explanation for Option A</h4>
           <TextField
-          id="ExplanationA"
-          label="Explanation for Option A"
-          placeholder="Enter Explanation for Option A"
-          multiline
-          rows={2}
-          fullWidth
-          sx={{ width: 600}}
-          required
-          value={explanationA}
-          onChange={(e) => setExplanationA(e.target.value)}
-        />
+            id="ExplanationA"
+            label="Explanation for Option A"
+            placeholder="Enter Explanation for Option A"
+            multiline
+            rows={2}
+            fullWidth
+            sx={{ width: 600 }}
+            required
+            value={explanationA}
+            onChange={(e) => setExplanationA(e.target.value)}
+          />
+          <div>
+            <h4>Preview</h4>
+            <MarkdownRenderer maxLines={5} source={explanationA} />
+          </div>
         </div>
       </Stack>
       <Stack spacing={2}>
         <div>
           <h4>Option B</h4>
           <TextField
-          id="OptionB"
-          label="Option B"
-          placeholder="Enter Option B"
-          multiline
-          rows={2}
-          fullWidth
-          sx={{ width: 600}}
-          required
-          value={optionB}
-          onChange={(e) => setOptionB(e.target.value)}
-        />
+            id="OptionB"
+            label="Option B"
+            placeholder="Enter Option B"
+            multiline
+            rows={2}
+            fullWidth
+            sx={{ width: 600 }}
+            required
+            value={optionB}
+            onChange={(e) => setOptionB(e.target.value)}
+          />
+          <div>
+            <h4>Preview</h4>
+            <MarkdownRenderer maxLines={5} source={optionB} />
+          </div>
         </div>
         <div>
           <h4>Explanation for Option B</h4>
           <TextField
-          id="ExplanationB"
-          label="Explanation for Option B"
-          placeholder="Enter Explanation for Option B"
-          multiline
-          rows={2}
-          fullWidth
-          sx={{ width: 600}}
-          required
-          value={explanationB}
-          onChange={(e) => setExplanationB(e.target.value)}
-        />
+            id="ExplanationB"
+            label="Explanation for Option B"
+            placeholder="Enter Explanation for Option B"
+            multiline
+            rows={2}
+            fullWidth
+            sx={{ width: 600 }}
+            required
+            value={explanationB}
+            onChange={(e) => setExplanationB(e.target.value)}
+          />
+          <div>
+            <h4>Preview</h4>
+            <MarkdownRenderer maxLines={5} source={explanationB} />
+          </div>
         </div>
       </Stack>
       <Stack spacing={2}>
         <div>
           <h4>Option C</h4>
           <TextField
-          id="OptionC"
-          label="Option C"
-          placeholder="Enter Option C"
-          multiline
-          rows={2}
-          fullWidth
-          sx={{ width: 600}}
-          required
-          value={optionC}
-          onChange={(e) => setOptionC(e.target.value)}
-        />
+            id="OptionC"
+            label="Option C"
+            placeholder="Enter Option C"
+            multiline
+            rows={2}
+            fullWidth
+            sx={{ width: 600 }}
+            required
+            value={optionC}
+            onChange={(e) => setOptionC(e.target.value)}
+          />
+          <div>
+            <h4>Preview</h4>
+            <MarkdownRenderer maxLines={5} source={optionC} />
+          </div>
         </div>
+
         <div>
           <h4>Explanation for Option C</h4>
           <TextField
-          id="ExplanationC"
-          label="Explanation for Option C"
-          placeholder="Enter Explanation for Option C"
-          multiline
-          rows={2}
-          fullWidth
-          sx={{ width: 600}}
-          required
-          value={explanationC}
-          onChange={(e) => setExplanationC(e.target.value)}
-        />
+            id="ExplanationC"
+            label="Explanation for Option C"
+            placeholder="Enter Explanation for Option C"
+            multiline
+            rows={2}
+            fullWidth
+            sx={{ width: 600 }}
+            required
+            value={explanationC}
+            onChange={(e) => setExplanationC(e.target.value)}
+          />
+          <div>
+            <h4>Preview</h4>
+            <MarkdownRenderer maxLines={5} source={explanationC} />
+          </div>
         </div>
       </Stack>
       <Stack spacing={2}>
         <div>
           <h4>Option D</h4>
           <TextField
-          id="OptionD"
-          label="Option D"
-          placeholder="Enter Option D"
-          multiline
-          rows={2}
-          fullWidth
-          sx={{ width: 600}}
-          required
-          value={optionD}
-          onChange={(e) => setOptionD(e.target.value)}
-        />
+            id="OptionD"
+            label="Option D"
+            placeholder="Enter Option D"
+            multiline
+            rows={2}
+            fullWidth
+            sx={{ width: 600 }}
+            required
+            value={optionD}
+            onChange={(e) => setOptionD(e.target.value)}
+          />
+          <div>
+            <h4>Preview</h4>
+            <MarkdownRenderer maxLines={5} source={optionD} />
+          </div>
         </div>
         <div>
           <h4>Explanation for Option D</h4>
           <TextField
-          id="ExplanationD"
-          label="Explanation for Option D"
-          placeholder="Enter Explanation for Option D"
-          multiline
-          rows={2}
-          fullWidth
-          required
-          value={explanationD}
-          onChange={(e) => setExplanationD(e.target.value)}
-        />
+            id="ExplanationD"
+            label="Explanation for Option D"
+            placeholder="Enter Explanation for Option D"
+            multiline
+            rows={2}
+            fullWidth
+            required
+            value={explanationD}
+            onChange={(e) => setExplanationD(e.target.value)}
+          />
+          <div>
+            <h4>Preview</h4>
+            <MarkdownRenderer maxLines={5} source={explanationD} />
+          </div>
         </div>
       </Stack>
       <Stack spacing={2}>
-        <FormControl fullWidt="true" required>
+        <FormControl fullWidth="true" required>
           <InputLabel id="demo-simple-select-label-2">Correct option</InputLabel>
           <Select
             labelId="demo-simple-select-label-2"
@@ -355,13 +394,13 @@ function Form() {
             <MenuItem value={1}>Option A</MenuItem>
             <MenuItem value={2}>Option B</MenuItem>
             <MenuItem value={3}>Option C</MenuItem>
-            <MenuItem value={2}>Option D</MenuItem>
+            <MenuItem value={4}>Option D</MenuItem>
           </Select>
         </FormControl>
       </Stack>
 
       <Stack spacing={2}>
-        <FormControl fullWidt="true" required>
+        <FormControl fullWidth="true" required>
           <InputLabel id="demo-simple-select-label">Difficulty</InputLabel>
           <Select
             labelId="demo-simple-select-label"
@@ -386,6 +425,7 @@ function Form() {
         </FormControl>
       </Stack>
 
+
       <Stack spacing={2}>
         {[...Array(comboBoxCount)].map((_, index) => (
           <Autocomplete
@@ -399,6 +439,7 @@ function Form() {
           />
         ))}
       </Stack>
+
       <Stack direction="row" spacing={2}>
         <Button variant="contained" onClick={handleLogButtonClick}>
           Add Tag
@@ -446,11 +487,11 @@ const constructFormData = (CorrectOption, Difficulty, selectedtags) => {
 
   var newDif;
   if (difficulty === EASY_DIFFICULTY) {
-      newDif = 'easy'
+    newDif = 'easy'
   } else if (difficulty === MEDIUM_DIFFICULTY) {
-      newDif = 'medium'
+    newDif = 'medium'
   } else {
-      newDif = 'hard'
+    newDif = 'hard'
   }
 
   const formData = {
@@ -475,11 +516,11 @@ const constructFormData = (CorrectOption, Difficulty, selectedtags) => {
   return formData;
 };
 
-function AddToQueueSharption(setquestions , setDownloadList) {
+function AddToQueueSharption(setquestions, setDownloadList) {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true); // State to track loading status
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-   useEffect(() => {
+  useEffect(() => {
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
@@ -492,19 +533,18 @@ function AddToQueueSharption(setquestions , setDownloadList) {
       setIsLoading(false); // Set loading to false once the check is complete
     });
 
-    // Cleanup subscription on unmount
     return () => unsubscribe();
- }, [navigate]);
+  }, [navigate]);
 
- if (isLoading) {
+  if (isLoading) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
         <CircularProgress />
       </Box>
     );
- }
+  }
 
- if (!isAuthenticated) {
+  if (!isAuthenticated) {
     return (
       <Container maxWidth="sm">
         <Paper elevation={3} style={{ padding: '20px', marginTop: '20px' }}>
@@ -518,29 +558,29 @@ function AddToQueueSharption(setquestions , setDownloadList) {
         </Paper>
       </Container>
     );
- }
+  }
   return (
     <div>
-      < Navbar setquestions  = {setquestions}  setDownloadlist = {setDownloadList}/>
-    <Card sx={{ margin: 'auto', maxWidth: 600, padding: 2 }}>
-      <CardContent>
-        <Typography
-          variant="h4"
-          noWrap
-          sx={{
-            fontFamily: 'monospace',
-            fontWeight: 700,
-            letterSpacing: '.3rem',
-            color: 'inherit',
-            textDecoration: 'none',
-            textAlign: 'center',
-          }}
-        >
-          Submit a question
-        </Typography>
-        <Form />
-      </CardContent>
-    </Card>
+      < Navbar setquestions={setquestions} setDownloadlist={setDownloadList} />
+      <Card sx={{ margin: 'auto', maxWidth: 600, padding: 2 }}>
+        <CardContent>
+          <Typography
+            variant="h4"
+            noWrap
+            sx={{
+              fontFamily: 'Helvetica',
+              fontWeight: 700,
+              // letterSpacing: '.3rem',
+              color: 'inherit',
+              textDecoration: 'none',
+              textAlign: 'center',
+            }}
+          >
+            Submit a question
+          </Typography>
+          <Form />
+        </CardContent>
+      </Card>
     </div>
   );
 }

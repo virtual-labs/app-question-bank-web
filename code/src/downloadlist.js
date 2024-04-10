@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import CardActions from '@mui/material/CardActions';
@@ -6,33 +6,42 @@ import Typography from '@mui/material/Typography';
 import ClearIcon from '@mui/icons-material/Clear';
 import { saveAs } from 'file-saver';
 import Navbar from './Navbar';
-import { useEffect, useState } from 'react';
 import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
 import { Link } from 'react-router-dom';
 import { Box, Button, CircularProgress, Container, Paper } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-function DownloadList({ downloadList, setDownloadList, setquestions }) {
+
+function DownloadList({ downloadList, setDownloadList, setQuestions }) {
   const initialTags = [
     { label: 'biology', color: '#26c6da' },
     { label: 'chemistry', color: '#ff7043' },
     { label: 'physics', color: '#9575cd' },
     { label: 'mathematics', color: '#4db6ac' }
   ];
+
   const removeItem = (index) => {
     const newList = [...downloadList];
     newList.splice(index, 1);
     setDownloadList(newList);
   };
+
   const downloadQuestions = () => {
     const questions = downloadList.map(item => JSON.stringify(item, null, 2));
     const blob = new Blob([questions.join('\n\n')], { type: 'text/plain;charset=utf-8' });
-    saveAs(blob, 'questions.txt');
+    saveAs(blob, 'questions.json');
     console.log('Downloading questions:', questions);
   };
+
+  // const onQuestionSelect = ({ index }) => {
+  //   navigate(`/quiz/${index}`);
+  // };
+
+
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true); // State to track loading status
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-   useEffect(() => {
+
+  useEffect(() => {
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
@@ -47,20 +56,20 @@ function DownloadList({ downloadList, setDownloadList, setquestions }) {
 
     // Cleanup subscription on unmount
     return () => unsubscribe();
- }, [navigate]);
+  }, [navigate]);
 
- if (isLoading) {
+  if (isLoading) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
         <CircularProgress />
       </Box>
     );
- }
+  }
 
- if (!isAuthenticated) {
+  if (!isAuthenticated) {
     return (
       <Container maxWidth="sm">
-        <Paper elevation={3} style={{ padding: '20px', marginTop: '20px' }}>
+        <Paper elevation={3} style={{ padding: '20px', marginTop: '20px', background: '#ffffff', color: '#333' }}>
           <Typography variant="h6" align="center">Access Restricted</Typography>
           <Typography variant="body1" align="center">Please log in to access this page.</Typography>
           <Box display="flex" justifyContent="center" marginTop="20px">
@@ -71,20 +80,18 @@ function DownloadList({ downloadList, setDownloadList, setquestions }) {
         </Paper>
       </Container>
     );
- }
-
-
+  }
 
   return (
-    <div>
-      < Navbar setquestions  = {setquestions}  setDownloadlist = {setDownloadList}/>
-      <Card sx={{ margin: 'auto', maxWidth: 600, padding: 2 }}>
+    <div style={{ background: '#f5f5f5', minHeight: '100vh' }}>
+      <Navbar setQuestions={setQuestions} setDownloadList={setDownloadList} />
+      <Card sx={{ margin: 'auto', maxWidth: 600, padding: 2, background: '#ffffff', color: '#333' }}>
         <CardContent style={{ textAlign: 'center' }}>
           <Typography variant="h5">Download List</Typography>
         </CardContent>
         {downloadList.map((item, index) => (
-          <Card key={index} style={{ marginBottom: 10 }}>
-            <CardContent style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Card key={index} style={{ marginBottom: 10, background: '#f0f0f0' }}   >
+            <CardContent style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }} >
               <Typography variant="body1">{item.question}</Typography>
               <button
                 onClick={() => removeItem(index)}
@@ -94,6 +101,7 @@ function DownloadList({ downloadList, setDownloadList, setquestions }) {
                   cursor: 'pointer',
                   padding: '0',
                   borderRadius: '50%',
+                  color: '#333'
                 }}
               >
                 <ClearIcon />
@@ -102,7 +110,7 @@ function DownloadList({ downloadList, setDownloadList, setquestions }) {
           </Card>
         ))}
         <CardActions style={{ justifyContent: 'center' }}>
-          <button onClick={downloadQuestions}>Download Now</button>
+          <button onClick={downloadQuestions} style={{ background: '#3f51b5', color: '#fff', border: 'none', padding: '10px 20px', borderRadius: '5px', cursor: 'pointer' }}>Download Now</button>
         </CardActions>
       </Card>
     </div>

@@ -31,28 +31,28 @@ const db = getFirestore(app);
 
 function changeLogoutDisplay(option){
   const modal = document.querySelector('nav #logout');
-  if(option === 0){
+  if(option == 0){
     modal.style.display = 'none';
   }
-  else if(option === 0){
+  else if(option == 0){
     modal.style.display = 'block';
   }
 }
 function changeLoginDisplay(option){
   const modal = document.querySelector('nav #login');
-  if(option === 0){
+  if(option == 0){
     modal.style.display = 'none';
   }
-  else if(option === 0){
+  else if(option == 0){
     modal.style.display = 'block';
   }
 }
 function changeSignupDisplay(option){
   const modal = document.querySelector('nav #signup');
-  if(option === 0){
+  if(option == 0){
     modal.style.display = 'none';
   }
-  else if(option === 0){
+  else if(option == 0){
     modal.style.display = 'block';
   }
 }

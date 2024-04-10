@@ -1,20 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, Typography, FormControl, InputLabel, Select, MenuItem, Button, IconButton, TextField } from '@mui/material';
-import { Add } from '@mui/icons-material';
+import { Card, CardContent, Typography, FormControl, InputLabel, Select, MenuItem, Button, IconButton, TextField, CircularProgress, Paper, Container } from '@mui/material';
+import { Add, Search } from '@mui/icons-material';
+import RemoveIcon from '@mui/icons-material/Remove';
 import { useNavigate } from 'react-router-dom';
 import Navbar from './Navbar';
 import Autocomplete from '@mui/material/Autocomplete';
-import SearchIcon from '@mui/icons-material/Search';
-import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { Link } from 'react-router-dom';
-import { Box, CircularProgress, Paper } from '@mui/material';
-import { Container } from '@mui/material';
-import { initialTags } from './tagsColors';
-// Firebase config
-import {firebaseConfig} from "./firebaseConfig.js"
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-// Firestore
-import { getFirestore, collection, getDocs } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js';
+import { Box } from '@mui/system';
+import { firebaseConfig } from "./firebaseConfig.js";
+import { initializeApp } from "firebase/app";
+import { getFirestore, collection, getDocs } from 'firebase/firestore';
+import { logDOM } from '@testing-library/react';
+import ClearIcon from '@mui/icons-material/Clear';
+import { ResizableBox } from 'react-resizable';
+import MarkdownRenderer from './MarkdownRenderer';
+
 const app = initializeApp(firebaseConfig);
 
 const tags = [
@@ -24,84 +25,88 @@ const tags = [
   { label: 'mathematics', color: '#4db6ac' }
 ];
 
+const difficulty_tags = [
+  { label: 'Easy', color: 'Blue' },
+  { label: 'Medium', color: 'Orange' },
+  { label: 'Hard', color: 'Hard' },
+]
+
+// function restoreSearchVars()
+// {
+
+// }
+
 function QuestionList({ questions, setquestions, downloadList, setDownloadList }) {
-  const [isLoading, setIsLoading] = useState(true); // State to track loading status
+  // setquestions([]);
+  // console.log("efbejd");
+  console.log(downloadList);
+  const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [questionsPerPage, setQuestionsPerPage] = useState(10);
   const [selectedTag, setSelectedTag] = useState(null);
   const [selectedDifficulty, setSelectedDifficulty] = useState(null);
-  const [errorMessage, setErrorMessage] = useState(null); // New state for error message
+  const [errorMessage, setErrorMessage] = useState(null);
   const indexOfLastQuestion = currentPage * questionsPerPage;
   const indexOfFirstQuestion = indexOfLastQuestion - questionsPerPage;
-  const currentQuestions = questions.slice(indexOfFirstQuestion, indexOfLastQuestion);
   const navigate = useNavigate();
-  const [ques, setQues] = useState([]);
+  const currentQuestions = questions.slice(indexOfFirstQuestion, indexOfLastQuestion);
+  const [ques, setques] = useState([]);
+  const [displayFlag, setDisplayFlag] = useState(false);
+  const [loadingquestions, setLoadingQuestions] = useState(false);
+
+
   useEffect(() => {
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        // User is signed in, update state accordingly
-        setIsAuthenticated(true);
-      } else {
-        // No user is signed in, update state accordingly
-        setIsAuthenticated(false);
-      }
-      setIsLoading(false); // Set loading to false once the check is complete
+      setIsAuthenticated(!!user);
+      setIsLoading(false);
     });
 
-    // Cleanup subscription on unmount
     return () => unsubscribe();
-  }, [navigate]);
-
-  if (isLoading) {
-    return (
-      <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
-        <CircularProgress />
-      </Box>
-    );
-  }
-
-  if (!isAuthenticated) {
-    return (
-      <Container maxWidth="sm">
-        <Paper elevation={3} style={{ padding: '20px', marginTop: '20px' }}>
-          <Typography variant="h6" align="center">Access Restricted</Typography>
-          <Typography variant="body1" align="center">Please log in to access this page.</Typography>
-          <Box display="flex" justifyContent="center" marginTop="20px">
-            <Button variant="contained" color="primary" component={Link} to="/login">
-              Go to Login
-            </Button>
-          </Box>
-        </Paper>
-      </Container>
-    );
-  }
-
-
+  }, []);
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
   };
 
+  const clearDifficulty = () => {
+    setSelectedDifficulty(null);
+  };
+
+  const handleRemoveFromDownloadList = (selectedQuestion) => {
+    const updatedDownloadList = downloadList.filter((question) => {
+      return (
+        question.question !== selectedQuestion.question ||
+        question.difficulty !== selectedQuestion.difficulty
+      );
+    });
+    setDownloadList(updatedDownloadList);
+    // console.log('Updated Download List:', updatedDownloadList);
+  }
+
   const handleQuestionsPerPageChange = (event) => {
     setQuestionsPerPage(event.target.value);
   };
 
-
-  const onQuestionSelect = ({ questions, index }) => {
+  const onQuestionSelect = ({ index }) => {
     navigate(`/quiz/${index + currentPage * questionsPerPage - questionsPerPage}`);
-  }
+  };
 
   const navigateToDownloadList = () => {
     navigate('/downloadlist');
-    console.log(downloadList)
-  }
+  };
 
   const handleAddToDownloadList = (question) => {
-    const updatedDownloadList = new Set([...downloadList, question]);
-    setDownloadList(Array.from(updatedDownloadList));
-    console.log('Updated Download List:', updatedDownloadList);
+
+    if (downloadList.some((item) => item.question === question.question)) {
+      alert('Question is already in the download list');
+    }
+    else {
+      const updatedDownloadList = new Set([...downloadList, question]);
+      setDownloadList(Array.from(updatedDownloadList));
+      alert('Question added to download list');
+    }
   };
 
   const handleTagChange = (event, newValue) => {
@@ -111,164 +116,218 @@ function QuestionList({ questions, setquestions, downloadList, setDownloadList }
   const handleDifficultyChange = (event) => {
     setSelectedDifficulty(event.target.value);
   };
-
-  const difficultyOptions = [
-    { label: 'Easy', value: 'easy' },
-    { label: 'Medium', value: 'medium' },
-    { label: 'Hard', value: 'hard' },
-  ];
-
-
-
-  const searchDB = () => {
-    if (selectedTag === null && selectedDifficulty === null) {
-       setErrorMessage('Please select a tag or difficulty to search'); // Set error message
-       return;
+  const check_ques_present_in_download_list = (question) => {
+    for (const downloadQuestion of downloadList) {
+      if (
+        downloadQuestion.question === question.question &&
+        downloadQuestion.difficulty === question.difficulty
+      ) {
+        return true;
+      }
     }
-    // Clear any previous error message
+    return false;
+  }
+  const searchDB = () => {
+
+    // setDisplayFlag(false)
+    setLoadingQuestions(true);
+    setques([]); // Clear previous questions
+    setquestions([]); // Clear previous questions
+    // console.log(selectedTag);
+    if (selectedTag === null && selectedDifficulty === null) {
+      setErrorMessage('Please select a tag or difficulty to search');
+      if (questions.length === 0) {
+        setDisplayFlag(true);
+      }
+      else
+        setDisplayFlag(false);
+      setLoadingQuestions(false);
+      return;
+    }
+
     setErrorMessage(null);
-   
-    // Clear the current questions list
-    setquestions([]);
-   
+
     const fetchQuestions = async () => {
       try {
-         const db = getFirestore();
-         const questionsRef = collection(db, 'questions'); // Replace with your collection name
-     
-         // Retrieve data from Firestore
-         const querySnapshot = await getDocs(questionsRef);
-         
-         // Process the data and update state
-         const questionList = [];
-         querySnapshot.forEach((doc) => {
-           const questionData = doc.data();
-           // Check if the question matches both the selected criteria
-           // Correctly using an AND condition
-           const matchesTag = selectedTag ? questionData.selectedTags.includes(selectedTag.label) : true;
-           const matchesDifficulty = selectedDifficulty ? questionData.difficulty === selectedDifficulty : true;
-     
-           if (matchesTag && matchesDifficulty) {
-            console.log(questionData);
-             const questionEntry = {
-               question: questionData.question,
-               answers: questionData.answers,
-               correctAnswer: questionData.correctAnswer,
-               difficulty: questionData.difficulty,
-               explanations: questionData.explanations,
-               selectedTags: questionData.selectedTags
-             };
-             questionList.push(questionEntry);
-           }
-         });
-     
-         // Update the questions state with the fetched questions
-         setquestions(questionList);
+        const db = getFirestore();
+        const questionsRef = collection(db, 'questions');
+        const querySnapshot = await getDocs(questionsRef);
+
+        const questionList = [];
+        querySnapshot.forEach((doc) => {
+          const questionData = doc.data();
+          // console.log(questionData.selectedTags);
+          if ((selectedTag && selectedDifficulty)) {
+            if ((questionData.selectedTags.includes(String(selectedTag.label)) && questionData.difficulty == selectedDifficulty))
+              questionList.push(questionData);
+          }
+          else if (selectedTag && questionData.selectedTags.includes(String(selectedTag.label))) {
+            questionList.push(questionData);
+          }
+          else if (selectedDifficulty && questionData.difficulty === selectedDifficulty) {
+            questionList.push(questionData);
+            // console.log('hii');
+          }
+        });
+        setquestions(questionList);
+        // console.log(questionList);
       } catch (error) {
-         console.error('Error fetching questions: ', error);
-         // Optionally, set an error message if the fetch fails
-         setErrorMessage('Failed to fetch questions. Please try again.');
+        console.error('Error fetching questions: ', error);
       }
-     };
-     
-   
-    // Call the fetchQuestions function
+    };
+
+    // console.log(questions);
     fetchQuestions();
-   };
+    if (questions.length === 0) {
+      setDisplayFlag(true);
+    }
+    else
+      setDisplayFlag(false);
+    setLoadingQuestions(false);
+    // setDisplayFlag(true);
+    // console.log(questions);
+
+  };
 
   return (
     <div>
-      < Navbar setquestions={setquestions} setDownloadlist={setDownloadList} />
 
-      <Card sx={{ margin: 'auto', maxWidth: 600, padding: 2 }}>
-        <CardContent>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 15 }}>
-            <Autocomplete
-              id="combo-box-initialTags"
-              options={initialTags} // Define the list of initialTags here
-              getOptionLabel={(option) => option.label}
-              value={selectedTag}
-              onChange={handleTagChange}
-              renderInput={(params) => <TextField {...params} label="Search by Tag" />}
-              sx={{ width: '49%' }}
-            />
-            <FormControl sx={{ width: '40%' }}>
-              <InputLabel id="difficultyLabel">Difficulty</InputLabel>
-              <Select
-                labelId="difficultyLabel"
-                id="difficulty"
-                value={selectedDifficulty}
-                onChange={handleDifficultyChange}
-                label="Difficulty"
-              >
-                {difficultyOptions.map((option) => (
-                  <MenuItem key={option.value} value={option.value}>{option.label}</MenuItem>
-                ))}
 
-              </Select>
-            </FormControl>
-            <IconButton onClick={searchDB}>
-              <SearchIcon />
-            </IconButton>
+      {isLoading ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+          <CircularProgress />
+        </Box>
+      ) : (
+        <>
+          {!isAuthenticated ? (
+            <>
+              <Container maxWidth="md">
+                <Paper elevation={3} sx={{ padding: '20px', marginTop: '20px' }}>
+                  <Typography variant="h6" align="center">Access Restricted</Typography>
+                  <Typography variant="body1" align="center">Please log in to access this page.</Typography>
+                  <Box sx={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
+                    <Button variant="contained" color="primary" component={Link} to="/login">Go to Login</Button>
+                  </Box>
+                </Paper>
+              </Container>
+            </>
+          ) : (
 
-          </div>
-          {errorMessage && (
-            <Typography variant="body2" color="error" gutterBottom sx={{ marginBottom: 2 }}>
-              {errorMessage}
-            </Typography>
+            <div>
+              <Navbar setquestions={setquestions} setDownloadlist={setDownloadList} />
+              <Container maxWidth="md">
+                <Paper elevation={3} sx={{ padding: '20px', marginTop: '20px' }}>
+                <CardContent>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 15 }}>
+                    <Autocomplete
+                      id="combo-box-initialTags"
+                      options={tags}
+                      getOptionLabel={(option) => option.label}
+                      value={selectedTag}
+                      onChange={handleTagChange}
+                      renderInput={(params) => <TextField {...params} label="Search by Tag" variant="outlined" />}
+                      sx={{ width: '45%' }}
+                    />
+                    <FormControl sx={{ width: '45%' }}>
+                      <InputLabel id="difficultyLabel">Difficulty</InputLabel>
+                      <Select
+                        labelId="difficultyLabel"
+                        id="difficulty"
+                        value={selectedDifficulty}
+                        onChange={handleDifficultyChange}
+                        label="Difficulty"
+                        renderValue={(selected) => selected}
+                      >
+                        {['Easy', 'Medium', 'Hard'].map((option, index) => (
+                          <MenuItem key={index} value={option.toLowerCase()} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span>{option}</span>
+                            {selectedDifficulty === option.toLowerCase() && (
+
+                              <IconButton onClick={clearDifficulty} edge="end" size="small" sx={{ marginLeft: 'auto' }}>
+                                <ClearIcon />
+                              </IconButton>
+                            )}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                    {/* <IconButton onClick={searchDB} color="primary">
+                    <Search />
+                  </IconButton> */}
+                  </div>
+                  {errorMessage && (
+                    <Typography variant="body2" color="error" gutterBottom sx={{ marginBottom: 2 }}>
+                      {errorMessage}
+                    </Typography>
+                  )
+                  }
+                  <FormControl sx={{ marginBottom: 2, width: '40%', display: 'flex', justifyContent: 'center' }}>
+                    <InputLabel id="questionsPerPageLabel">Questions per Page</InputLabel>
+                    <Select
+                      labelId="questionsPerPageLabel"
+                      id="questionsPerPage"
+                      value={questionsPerPage}
+                      onChange={handleQuestionsPerPageChange}
+                      label="Questions per Page"
+                    >
+                      {[5, 10, 15, 20].map((option, index) => (
+                        <MenuItem key={index} value={option}>{option}</MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                  <Button onClick={searchDB} variant="contained" color="primary">Search</Button>
+                  {
+                    loadingquestions && (selectedTag || selectedDifficulty) && (
+                      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+                        <CircularProgress />
+                      </Box>
+                    )
+                  }
+                  {questions.length === 0 && (selectedTag || selectedDifficulty) && (displayFlag) && (
+                    <Typography variant="h6" align="center" gutterBottom>
+                      No results that match your search criteria
+                    </Typography>
+                  )}
+                  {questions.length > 0 && questions.map((question, index) => (
+                    <Card key={index} sx={{ marginBottom: 2, padding: 2, backgroundColor: '#f5f5f5', borderRadius: '4px', cursor: 'pointer' }} onClick={() => onQuestionSelect({ index })}>
+                      <CardContent style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <div>
+                          <Typography variant="h6">Question {indexOfFirstQuestion + index + 1}</Typography>
+                          <MarkdownRenderer source={question.question} />
+                        </div>
+                        {
+                          !check_ques_present_in_download_list(question) ?
+                            (<IconButton onClick={(e) => { e.stopPropagation(); handleAddToDownloadList(question); }} color="primary">
+                              <Add />
+                            </IconButton>)
+                            :
+                            (<IconButton onClick={(e) => { e.stopPropagation(); handleRemoveFromDownloadList(question); }} color="primary">
+                              <RemoveIcon />
+                            </IconButton>)
+                        }
+                      </CardContent>
+                    </Card>
+                  ))}
+                  <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1rem' }}>
+                    {Array.from({ length: Math.ceil(questions.length / questionsPerPage) }, (_, i) => (
+                      <button key={i} onClick={() => handlePageChange(i + 1)} style={{ margin: '0.5rem', padding: '0.5rem 1rem', backgroundColor: currentPage === i + 1 ? '#26c6da' : '#f5f5f5', color: currentPage === i + 1 ? 'white' : 'black', border: '1px solid #ccc', borderRadius: '4px', cursor: 'pointer' }}>
+                        {i + 1}
+                      </button>
+                    ))}
+                  </div>
+                  
+                </CardContent>
+                </Paper>
+              </Container>
+
+
+            </div>
           )}
-          <FormControl sx={{ marginBottom: 2, width: '40%', display: 'flex', justifyContent: 'center' }}>
-            <InputLabel id="questionsPerPageLabel">Questions per Page</InputLabel>
-            <Select
-              labelId="questionsPerPageLabel"
-              id="questionsPerPage"
-              value={questionsPerPage}
-              onChange={handleQuestionsPerPageChange}
-              label="Questions per Page"
-            >
-              <MenuItem value={5}>5</MenuItem>
-              <MenuItem value={10}>10</MenuItem>
-              <MenuItem value={15}>15</MenuItem>
-              <MenuItem value={20}>20</MenuItem>
-            </Select>
-          </FormControl>
-          {currentQuestions.length === 0 && (selectedTag != null || selectedDifficulty != null) && (
-            <Typography variant="h6" align="center" gutterBottom>
-              No results that match your search history
-            </Typography>
-          )}
-
-          {currentQuestions.length > 0 && currentQuestions.map((question, index) => (
-            <Card key={index} sx={{ marginBottom: 2, padding: 2, backgroundColor: '#f5f5f5', borderRadius: '4px' }} onClick={() => onQuestionSelect({ questions, index })}>
-              <CardContent style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div>
-                  <Typography variant="h6">Question {indexOfFirstQuestion + index + 1}</Typography>
-                  <Typography variant="body1">{question.question}</Typography>
-                </div>
-                <IconButton onClick={(e) => { e.stopPropagation(); handleAddToDownloadList(question); }}>
-                  <Add />
-                </IconButton>
-              </CardContent>
-            </Card>
-          ))}
-
-          <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1rem' }}>
-            {Array.from({ length: Math.ceil(questions.length / questionsPerPage) }, (_, i) => (
-              <button key={i} onClick={() => handlePageChange(i + 1)} style={{ margin: '0.5rem', padding: '0.5rem 1rem', backgroundColor: currentPage === i + 1 ? 'green' : 'white', color: currentPage === i + 1 ? 'white' : 'black', border: '1px solid #ccc', borderRadius: '4px', cursor: 'pointer' }}>
-                {i + 1}
-              </button>
-            ))}
-          </div>
-          <Button onClick={navigateToDownloadList}>Go to Download List</Button>
-
-        </CardContent>
-      </Card>
+        </>
+      )}
     </div>
   );
+
 }
 
-
 export default QuestionList;
-
-
-
