@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { 
-  getAuth
+  getAuth,GoogleAuthProvider,signInWithPopup
 } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js'
 
 const firebaseConfig = {
@@ -15,5 +15,6 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+
 
 export { firebaseConfig, app, auth }; // Export the auth object
