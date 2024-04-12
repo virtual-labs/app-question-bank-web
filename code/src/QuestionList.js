@@ -15,6 +15,7 @@ import { logDOM } from '@testing-library/react';
 import ClearIcon from '@mui/icons-material/Clear';
 import { ResizableBox } from 'react-resizable';
 import MarkdownRenderer from './MarkdownRenderer';
+import Chip from '@mui/material/Chip';
 
 const app = initializeApp(firebaseConfig);
 
@@ -44,7 +45,7 @@ function QuestionList({ questions, setquestions, downloadList, setDownloadList }
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [questionsPerPage, setQuestionsPerPage] = useState(10);
-  const [selectedTag, setSelectedTag] = useState(null);
+  const [selectedTag, setselectedTag] = useState([]);
   const [selectedDifficulty, setSelectedDifficulty] = useState(null);
   const [errorMessage, setErrorMessage] = useState(null);
   const indexOfLastQuestion = currentPage * questionsPerPage;
@@ -54,8 +55,7 @@ function QuestionList({ questions, setquestions, downloadList, setDownloadList }
   const [ques, setques] = useState([]);
   const [displayFlag, setDisplayFlag] = useState(false);
   const [loadingquestions, setLoadingQuestions] = useState(false);
-
-
+  const [qemail, setQemail] = useState('');
   useEffect(() => {
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -110,7 +110,7 @@ function QuestionList({ questions, setquestions, downloadList, setDownloadList }
   };
 
   const handleTagChange = (event, newValue) => {
-    setSelectedTag(newValue);
+    setselectedTag(newValue);
   };
 
   const handleDifficultyChange = (event) => {
@@ -129,26 +129,28 @@ function QuestionList({ questions, setquestions, downloadList, setDownloadList }
   }
 
 
-  async function fetch_requests(url)
-  {
-    const dat=await fetch(url)
-    .then((response) => {
-      return response.json(); // Parse the JSON response
-    })
-    .then((data) => {
-      // console.log(data);
-      return data // Process the data received from the server
-    })
-    .catch((error) => {
-      console.error(
-        "There was a problem with the fetch operation:",
-        error
-      );
-    });
+  async function fetch_requests(url) {
+    const dat = await fetch(url)
+      .then((response) => {
+        return response.json(); // Parse the JSON response
+      })
+      .then((data) => {
+        // console.log(data);
+        return data // Process the data received from the server
+      })
+      .catch((error) => {
+        console.error(
+          "There was a problem with the fetch operation:",
+          error
+        );
+      });
 
     return dat;
   }
 
+  const handleDelete = (chipToDelete) => () => {
+    setselectedTag((chips) => chips.filter((chip) => chip !== chipToDelete));
+  };
 
 
 
@@ -169,36 +171,35 @@ function QuestionList({ questions, setquestions, downloadList, setDownloadList }
       setLoadingQuestions(false);
       return;
     }
-
     setErrorMessage(null);
 
     const fetchQuestions = async () => {
       try {
         // Make a GET request using fetch
-        
-         let questionList = [];
+
+        let questionList = [];
         if ((selectedTag && selectedDifficulty)) {
-          console.log(selectedTag,selectedDifficulty);
+          console.log(selectedTag, selectedDifficulty);
           // if ((questionData.selectedTags.includes(String(selectedTag.label)) && questionData.difficulty == selectedDifficulty))
-           const data = await fetch_requests(`http://127.0.0.1:3001/api/questions?tag=${selectedTag.label}&difficulty=${selectedDifficulty}`)
+          const data = await fetch_requests(`http://127.0.0.1:3001/api/questions?tag=${selectedTag.label}&difficulty=${selectedDifficulty}`)
           //  console.log(data.data.questions);
-            questionList=data.data.questions;
-          }
-          else if (selectedTag) {
-            const data = await fetch_requests(`http://127.0.0.1:3001/api/questions?tag=${selectedTag.label}`);
-            // console.log(data.data.questions);
-            questionList=data.data.questions;
+          questionList = data.data.questions;
+        }
+        else if (selectedTag) {
+          const data = await fetch_requests(`http://127.0.0.1:3001/api/questions?tag=${selectedTag.label}`);
+          // console.log(data.data.questions);
+          questionList = data.data.questions;
 
-          }
-          else if (selectedDifficulty ) {
-            const data = await fetch_requests(`http://127.0.0.1:3001/api/questions?difficulty=${selectedDifficulty}`);
-            // console.log(data.data.questions);
-            questionList=data.data.questions;
-          }
+        }
+        else if (selectedDifficulty) {
+          const data = await fetch_requests(`http://127.0.0.1:3001/api/questions?difficulty=${selectedDifficulty}`);
+          // console.log(data.data.questions);
+          questionList = data.data.questions;
+        }
 
 
-          console.log(questionList);
-          setquestions(questionList);
+        console.log(questionList);
+        setquestions(questionList);
 
 
         // const db = getFirestore();
@@ -208,17 +209,17 @@ function QuestionList({ questions, setquestions, downloadList, setDownloadList }
         // querySnapshot.forEach((doc) => {
         //   const questionData = doc.data();
         //   console.log(questionData);
-          // if ((selectedTag && selectedDifficulty)) {
-          //   if ((questionData.selectedTags.includes(String(selectedTag.label)) && questionData.difficulty == selectedDifficulty))
-          //     questionList.push(questionData);
-          // }
-          // else if (selectedTag && questionData.selectedTags.includes(String(selectedTag.label))) {
-          //   questionList.push(questionData);
-          // }
-          // else if (selectedDifficulty && questionData.difficulty === selectedDifficulty) {
-          //   questionList.push(questionData);
-          //   // console.log('hii');
-          // }
+        // if ((selectedTag && selectedDifficulty)) {
+        //   if ((questionData.selectedTags.includes(String(selectedTag.label)) && questionData.difficulty == selectedDifficulty))
+        //     questionList.push(questionData);
+        // }
+        // else if (selectedTag && questionData.selectedTags.includes(String(selectedTag.label))) {
+        //   questionList.push(questionData);
+        // }
+        // else if (selectedDifficulty && questionData.difficulty === selectedDifficulty) {
+        //   questionList.push(questionData);
+        //   // console.log('hii');
+        // }
         // });
 
         // console.log(questionList);
@@ -245,7 +246,7 @@ function QuestionList({ questions, setquestions, downloadList, setDownloadList }
 
 
       {isLoading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <Box sx={{ display: 'flex', justifyContent: 'left', alignItems: 'left', height: '100vh' }}>
           <CircularProgress />
         </Box>
       ) : (
@@ -268,106 +269,129 @@ function QuestionList({ questions, setquestions, downloadList, setDownloadList }
               <Navbar setquestions={setquestions} setDownloadlist={setDownloadList} />
               <Container maxWidth="md">
                 <Paper elevation={3} sx={{ padding: '20px', marginTop: '20px' }}>
-                <CardContent>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 15 }}>
-                    <Autocomplete
-                      id="combo-box-initialTags"
-                      options={tags}
-                      getOptionLabel={(option) => option.label}
-                      value={selectedTag}
-                      onChange={handleTagChange}
-                      renderInput={(params) => <TextField {...params} label="Search by Tag" variant="outlined" />}
-                      sx={{ width: '45%' }}
-                    />
-                    <FormControl sx={{ width: '45%' }}>
-                      <InputLabel id="difficultyLabel">Difficulty</InputLabel>
-                      <Select
-                        labelId="difficultyLabel"
-                        id="difficulty"
-                        value={selectedDifficulty}
-                        onChange={handleDifficultyChange}
-                        label="Difficulty"
-                        renderValue={(selected) => selected}
-                      >
-                        {['Easy', 'Medium', 'Hard'].map((option, index) => (
-                          <MenuItem key={index} value={option.toLowerCase()} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <span>{option}</span>
-                            {selectedDifficulty === option.toLowerCase() && (
+                  <CardContent>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 15 }}>
+                      <Autocomplete
+                        multiple
+                        filterSelectedOptions
+                        limitTags={3} // Displays only 3 max tags of autocomplete when not in focus
+                        options={tags}
+                        getOptionLabel={(option) => option.label}
+                        value={selectedTag}
+                        onChange={(event, newValue) => {
+                          setselectedTag(newValue);
+                        }}
+                        renderTags={(tagValue, getTagProps) =>
+                          tagValue.map((option, index) => (
+                            <Chip
+                              label={option.label}
+                              {...getTagProps({ index })}
+                              style={{ margin: 2, backgroundColor: option.color }} // Apply the color to the Chip
+                              onDelete={handleDelete(option)} // Add delete handler
+                            />
+                          ))
+                        }
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            label="Select Tags"
+                            placeholder="Tags"
+                          />
+                        )}
+                        sx={{ width: '45%' }} // Set the width of the Autocomplete component
+                      />
+                      <FormControl sx={{ width: '45%' }}>
+                        <InputLabel id="difficultyLabel">Difficulty</InputLabel>
+                        <Select
+                          labelId="difficultyLabel"
+                          id="difficulty"
+                          value={selectedDifficulty}
+                          onChange={handleDifficultyChange}
+                          label="Difficulty"
+                          renderValue={(selected) => selected}
+                        >
+                          {['Easy', 'Medium', 'Hard'].map((option, index) => (
+                            <MenuItem key={index} value={option.toLowerCase()} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <span>{option}</span>
+                              {selectedDifficulty === option.toLowerCase() && (
 
-                              <IconButton onClick={clearDifficulty} edge="end" size="small" sx={{ marginLeft: 'auto' }}>
-                                <ClearIcon />
-                              </IconButton>
-                            )}
-                          </MenuItem>
+                                <IconButton onClick={clearDifficulty} edge="end" size="small" sx={{ marginLeft: 'auto' }}>
+                                  <ClearIcon />
+                                </IconButton>
+                              )}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                      {/* <IconButton onClick={searchDB} color="primary">
+                    <Search />
+                  </IconButton> */}
+                    </div>
+                    {errorMessage && (
+                      <Typography variant="body2" color="error" gutterBottom sx={{ marginBottom: 2 }}>
+                        {errorMessage}
+                      </Typography>
+                    )
+                    }
+                    <FormControl sx={{ marginBottom: 2, width: '100%', display: 'flex', justifyContent: 'center' }}>
+                      <TextField label="Email" variant="outlined" value={qemail} onChange={(e) => setQemail(e.target.value)} />
+                    </FormControl>  
+                    <FormControl sx={{ marginBottom: 2, width: '40%', display: 'flex', justifyContent: 'center' }}>
+                      <InputLabel id="questionsPerPageLabel">Questions per Page</InputLabel>
+                      <Select
+                        labelId="questionsPerPageLabel"
+                        id="questionsPerPage"
+                        value={questionsPerPage}
+                        onChange={handleQuestionsPerPageChange}
+                        label="Questions per Page"
+                      >
+                        {[5, 10, 15, 20].map((option, index) => (
+                          <MenuItem key={index} value={option}>{option}</MenuItem>
                         ))}
                       </Select>
                     </FormControl>
-                    {/* <IconButton onClick={searchDB} color="primary">
-                    <Search />
-                  </IconButton> */}
-                  </div>
-                  {errorMessage && (
-                    <Typography variant="body2" color="error" gutterBottom sx={{ marginBottom: 2 }}>
-                      {errorMessage}
-                    </Typography>
-                  )
-                  }
-                  <FormControl sx={{ marginBottom: 2, width: '40%', display: 'flex', justifyContent: 'center' }}>
-                    <InputLabel id="questionsPerPageLabel">Questions per Page</InputLabel>
-                    <Select
-                      labelId="questionsPerPageLabel"
-                      id="questionsPerPage"
-                      value={questionsPerPage}
-                      onChange={handleQuestionsPerPageChange}
-                      label="Questions per Page"
-                    >
-                      {[5, 10, 15, 20].map((option, index) => (
-                        <MenuItem key={index} value={option}>{option}</MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                  <Button onClick={searchDB} variant="contained" color="primary">Search</Button>
-                  {
-                    loadingquestions && (selectedTag || selectedDifficulty) && (
-                      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-                        <CircularProgress />
-                      </Box>
-                    )
-                  }
-                  {questions.length === 0 && (selectedTag || selectedDifficulty) && (displayFlag) && (
-                    <Typography variant="h6" align="center" gutterBottom>
-                      No results that match your search criteria
-                    </Typography>
-                  )}
-                  {questions.length > 0 && questions.map((question, index) => (
-                    <Card key={index} sx={{ marginBottom: 2, padding: 2, backgroundColor: '#f5f5f5', borderRadius: '4px', cursor: 'pointer' }} onClick={() => onQuestionSelect({ index })}>
-                      <CardContent style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <div>
-                          <Typography variant="h6">Question {indexOfFirstQuestion + index + 1}</Typography>
-                          <MarkdownRenderer source={question.question} />
-                        </div>
-                        {
-                          !check_ques_present_in_download_list(question) ?
-                            (<IconButton onClick={(e) => { e.stopPropagation(); handleAddToDownloadList(question); }} color="primary">
-                              <Add />
-                            </IconButton>)
-                            :
-                            (<IconButton onClick={(e) => { e.stopPropagation(); handleRemoveFromDownloadList(question); }} color="primary">
-                              <RemoveIcon />
-                            </IconButton>)
-                        }
-                      </CardContent>
-                    </Card>
-                  ))}
-                  <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1rem' }}>
-                    {Array.from({ length: Math.ceil(questions.length / questionsPerPage) }, (_, i) => (
-                      <button key={i} onClick={() => handlePageChange(i + 1)} style={{ margin: '0.5rem', padding: '0.5rem 1rem', backgroundColor: currentPage === i + 1 ? '#26c6da' : '#f5f5f5', color: currentPage === i + 1 ? 'white' : 'black', border: '1px solid #ccc', borderRadius: '4px', cursor: 'pointer' }}>
-                        {i + 1}
-                      </button>
+                    <Button onClick={searchDB} variant="contained" color="primary">Search</Button>
+                    {
+                      loadingquestions && (selectedTag || selectedDifficulty) && (
+                        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+                          <CircularProgress />
+                        </Box>
+                      )
+                    }
+                    {questions.length === 0 && (selectedTag || selectedDifficulty) && (displayFlag) && (
+                      <Typography variant="h6" align="center" gutterBottom>
+                        No results that match your search criteria
+                      </Typography>
+                    )}
+                    {questions.length > 0 && questions.map((question, index) => (
+                      <Card key={index} sx={{ marginBottom: 2, padding: 2, backgroundColor: '#f5f5f5', borderRadius: '4px', cursor: 'pointer' }} onClick={() => onQuestionSelect({ index })}>
+                        <CardContent style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <div>
+                            <Typography variant="h6">Question {indexOfFirstQuestion + index + 1}</Typography>
+                            <MarkdownRenderer source={question.question} />
+                          </div>
+                          {
+                            !check_ques_present_in_download_list(question) ?
+                              (<IconButton onClick={(e) => { e.stopPropagation(); handleAddToDownloadList(question); }} color="primary">
+                                <Add />
+                              </IconButton>)
+                              :
+                              (<IconButton onClick={(e) => { e.stopPropagation(); handleRemoveFromDownloadList(question); }} color="primary">
+                                <RemoveIcon />
+                              </IconButton>)
+                          }
+                        </CardContent>
+                      </Card>
                     ))}
-                  </div>
-                  
-                </CardContent>
+                    <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1rem' }}>
+                      {Array.from({ length: Math.ceil(questions.length / questionsPerPage) }, (_, i) => (
+                        <button key={i} onClick={() => handlePageChange(i + 1)} style={{ margin: '0.5rem', padding: '0.5rem 1rem', backgroundColor: currentPage === i + 1 ? '#26c6da' : '#f5f5f5', color: currentPage === i + 1 ? 'white' : 'black', border: '1px solid #ccc', borderRadius: '4px', cursor: 'pointer' }}>
+                          {i + 1}
+                        </button>
+                      ))}
+                    </div>
+
+                  </CardContent>
                 </Paper>
               </Container>
 
