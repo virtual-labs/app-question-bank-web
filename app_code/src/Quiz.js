@@ -16,13 +16,29 @@ import { auth } from './firebaseConfig'
 const DEFAULT_IMAGE_WIDTH = '200px';
 const ENLARGED_IMAGE_WIDTH = '580px';
 
-function Quiz({ quizData, downloadList, setdownloadlist, setquestions, token, setToken }) {
+
+
+const tagColors = [
+  '#FF5733', '#33FF57', '#3357FF', '#FF33A8', '#FFC733',
+  '#33FFF7', '#FF5733', '#A833FF', '#FF5733', '#33FF57',
+  '#3357FF', '#FF33A8', '#FFC733', '#33FFF7', '#A833FF'
+];
+
+const getRandomColor = () => {
+  return tagColors[Math.floor(Math.random() * tagColors.length)];
+};
+
+
+
+
+function Quiz({ questionData,setQuestionData,quizData, downloadList, setdownloadlist, setquestions, token, setToken, selectedRole, setSelectedRole }) {
   const navigate = useNavigate();
   const { index } = useParams();
   const selectedQuestion = quizData[parseInt(index)]; // Parse index to ensure it's a number
   console.log(selectedQuestion);
   const [selectedOption, setSelectedOption] = useState(null);
-
+  setQuestionData(selectedQuestion);
+  console.log(questionData);
   const handleOptionSelect = (event) => {
     setSelectedOption(event.target.value);
   };
@@ -93,22 +109,22 @@ function Quiz({ quizData, downloadList, setdownloadlist, setquestions, token, se
 
   function CorrectAnswerPrint() {
     var answer_option;
-    if (selectedQuestion.correctAnswer === 1) {
+    if (selectedQuestion.correctAnswer === 1||selectedQuestion.correctAnswer === 'a') {
       answer_option = selectedQuestion.answers.a;
     }
-    else if (selectedQuestion.correctAnswer === 2) {
+    else if (selectedQuestion.correctAnswer === 2||selectedQuestion.correctAnswer === 'b') {
       answer_option = selectedQuestion.answers.b;
     }
-    else if (selectedQuestion.correctAnswer === 3) {
+    else if (selectedQuestion.correctAnswer === 3||selectedQuestion.correctAnswer === 'c') {
       answer_option = selectedQuestion.answers.c;
     }
-    else if (selectedQuestion.correctAnswer === 4) {
+    else if (selectedQuestion.correctAnswer === 4||selectedQuestion.correctAnswer === 'd') {
       answer_option = selectedQuestion.answers.d;
     }
     return (
       <>
-      <MarkdownRenderer source={answer_option} />
-        
+        <MarkdownRenderer source={answer_option} />
+
       </>
 
     )
@@ -193,7 +209,7 @@ function Quiz({ quizData, downloadList, setdownloadlist, setquestions, token, se
     );
 
   }
-  const keyvalarray = ['a', 'b', 'c', 'd'];
+  const keyvalarray = ['a', 'b', 'c', 'd','e','f'];
 
   function handleMouseOver(event) {
     const currentWidth = event.target.style.width;
@@ -208,12 +224,36 @@ function Quiz({ quizData, downloadList, setdownloadlist, setquestions, token, se
     const currentWidth = event.target.style.width;
     event.target.style.width = currentWidth === DEFAULT_IMAGE_WIDTH ? ENLARGED_IMAGE_WIDTH : DEFAULT_IMAGE_WIDTH;
   }
+
+  if (!selectedRole.includes("Administrator") && !selectedRole.includes("Question User") && !selectedRole.includes("Quiz Participant")) {
+    return (
+      <Container maxWidth="sm">
+        <Paper elevation={3} style={{ padding: '20px', marginTop: '20px' }}>
+          <Typography variant="h6" align="center">Access Restricted</Typography>
+          <Typography variant="body1" align="center">You do not have the necessary permissions to submit a question.</Typography>
+        </Paper>
+      </Container>
+    );
+  }
+
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
-      <Navbar setquestions={setquestions} setdownloadlist={setdownloadlist} />
+      <Navbar setquestions={setquestions} setdownloadlist={setdownloadlist} selectedRole={selectedRole} setSelectedRole={setSelectedRole} />
       {selectedQuestion
         && (
-          <Card sx={{ marginBottom: 2, padding: 2, backgroundColor: '#f5f5f5', borderRadius: '4px', textAlign: 'left', width: '80%' }}>
+          <Card sx={{ marginBottom: 2, padding: 2, backgroundColor: '#f5f5f5', borderRadius: '4px', textAlign: 'left', width: '80%', position: 'relative' }}>
+            {
+              selectedRole.includes("Administrator") &&
+              (<Button
+              variant="contained"
+              color="primary"
+              style={{ position: 'absolute', top: '10px', right: '10px' }}
+              onClick={() => navigate(`/update`)}
+            >
+              Update Question
+            </Button>)
+            }
             <CardContent>
               <Typography
                 variant="h6"
@@ -225,8 +265,8 @@ function Quiz({ quizData, downloadList, setdownloadlist, setquestions, token, se
               <Typography variant="body1" sx={{ marginTop: 2 }} fontWeight="bold" style={{ display: 'flex', justifyContent: 'left' }}>Tags:</Typography>
               <div style={{ display: 'flex', justifyContent: 'left' }}>
                 {selectedQuestion.selectedTags && selectedQuestion.selectedTags.map((tag, index) => {
-                  // Find the color for the current tag
-                  const tagColor = initialTags.find(t => t.label === tag)?.color || '#000000'; // Default to black if not found
+                  // Select a random color for the current tag
+                  const tagColor = getRandomColor();
                   return (
                     <Chip key={index} label={tag} style={{ backgroundColor: tagColor }} />
                   );
@@ -283,19 +323,19 @@ function Quiz({ quizData, downloadList, setdownloadlist, setquestions, token, se
               {/* Display Tags */}
               <div style={{ textAlign: 'center' }}> {/* Center align the content within this div */}
                 <Typography variant="body1" sx={{ marginTop: 2 }} fontWeight="bold">
-                   Correct Answer:
+                  Correct Answer:
                 </Typography>
                 <div style={{ display: 'inline-block' }}> {/* Center align content inside this div */}
                   <CorrectAnswerPrint />
                 </div>
               </div>
               <div style={{ textAlign: 'center' }}> {/* Center align the content within this div */}
-                <Typography variant="body1" sx={{ marginTop: 2 }} fontWeight="bold">
-                  Contributor's Email:
-                </Typography>
-                <div style={{ display: 'inline-block' }}> {/* Center align content inside this div */}
-                  <ContributorEmailPrint />
-                </div>
+                {/* <Typography variant="body1" sx={{ marginTop: 2 }} fontWeight="bold"> */}
+                  {/* Contributor's Email: */}
+                {/* </Typography> */}
+                {/* <div style={{ display: 'inline-block' }}> Center align content inside this div */}
+                  {/* <ContributorEmailPrint /> */}
+                {/* </div> */}
               </div>
 
             </CardContent>

@@ -4,18 +4,22 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { styled } from '@mui/system';
 import { useNavigate } from 'react-router-dom';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
-import { auth } from './firebaseConfig';
 import Alert from '@mui/material/Alert';
-import GoogleButton from 'react-google-button'
-import { 
-  getAuth,GoogleAuthProvider,signInWithPopup
-} from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js'
-import { firebaseConfig,app } from './firebaseConfig';
+import GoogleButton from 'react-google-button';
+import Checkbox from '@mui/material/Checkbox';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import { auth } from './firebaseConfig';
+import {
+  getAuth, GoogleAuthProvider, signInWithPopup,
+  signInWithEmailAndPassword, createUserWithEmailAndPassword
+} from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+import { firebaseConfig, app } from './firebaseConfig';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { getFirestore } from 'firebase/firestore';
 
-
-
-
+const db = getFirestore();
 
 const RootBox = styled(Box)({
   display: 'flex',
@@ -30,19 +34,8 @@ const ImageContainer = styled(Box)({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  backgroundImage: "https://img.pikbest.com/background/20220119/vector-flat-night-sky-stars-scene-advertising-background_6232470.jpg",
+  backgroundImage: "url('https://img.pikbest.com/background/20220119/vector-flat-night-sky-stars-scene-advertising-background_6232470.jpg')",
   padding: '20px',
-});
-
-const NightSky = styled(Box)({
-  position: 'absolute',
-  top: '0',
-  left: '0',
-  width: '100%',
-  height: '100%',
-  backgroundSize: 'cover',
-  backgroundPosition: 'center',
-  opacity: '0.8',
 });
 
 const RocketImage = styled('img')({
@@ -50,11 +43,6 @@ const RocketImage = styled('img')({
   width: '100%',
   maxWidth: '100%',
   zIndex: '1',
-  // animation: 'propellant 1s infinite alternate',
-  // '@keyframes propellant': {
-  //   from: { transform: 'translateY(0px)' },
-  //   to: { transform: 'translateY(-10px)' }
-  // }
 });
 
 const TextOverlay = styled(Box)({
@@ -97,128 +85,130 @@ const StyledButton = styled(Button)({
   margin: '10px 0',
 });
 
-function LoginPage({email,setEmail,password,setPassword,token,setToken}) 
-{
+function LoginPage({ email, setEmail, password, setPassword, token, setToken, selectedRole, setSelectedRole }) {
   const navigate = useNavigate();
- 
   const [errorMessage, setErrorMessage] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
   const [loggingIn, setLoggingIn] = useState(false);
   const [signingUp, setSigningUp] = useState(false);
-  const [authDone,setAuthDone]=useState(false);
-  // const [token,setToken]=useState('');
+  const [step, setStep] = useState(1);
+  const [rolesChecked, setRolesChecked] = useState(false);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(user => {
       if (user) {
-        navigate('/search');
+        console.log("Login_Role:", selectedRole);
+        navigate('/LandingPage');
       }
       setLoggingIn(false);
       setSigningUp(false);
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [selectedRole]);
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
-    const formData = {
-      email: email,
-      password: password,
-    };
-    console.log(formData);
-    setEmail(formData.email);
-    setPassword(formData.password);
-    // console.log(email);
-    if (isSignUp) {
+    if (isSignUp && step === 1) {
+      setStep(2);
+      return;
+    }
+
+    if (isSignUp && step === 2) {
+      if (selectedRole.length === 0) {
+        setErrorMessage('Please select at least one role.');
+        return;
+      }
+
       setSigningUp(true);
       createUserWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+          const user = userCredential.user;
+          console.log("User signed up:", user);
+          return setDoc(doc(db, "users", user.uid), {
+            email: email,
+            role: selectedRole,
+          });
+        })
+        .then(() => {
+          console.log("Role saved successfully");
+          setSigningUp(false);
+          setIsSignUp(false);
+          setEmail('');
+          setPassword('');
+          setStep(1);
+        })
         .catch((error) => {
-          if(error.code === 'auth/email-already-in-use'){
-            setErrorMessage('This email already in use. 👀 (error/200)');
-          }
-          else{
-            setErrorMessage('Password must be of minimum 6 characters!');
+          if (error.code === 'auth/email-already-in-use') {
+            setErrorMessage('This email is already in use.');
+          } else {
+            setErrorMessage('Password must be at least 6 characters long.');
           }
           console.log("Error signing up:", error.message);
           setSigningUp(false);
         });
     } else {
-      setLoggingIn(true);      
+      setLoggingIn(true);
       signInWithEmailAndPassword(auth, email, password)
-        .catch((error) => {
-          setErrorMessage('Wrong Credentials');
+        .then(async (userCredential) => {
+          const user = userCredential.user;
+          const userDoc = await getDoc(doc(db, 'users', user.uid));
+          if (userDoc.exists()) {
+            const userData = userDoc.data();
+            // console.log('User logged in with Role:', userData.Role);
+            setSelectedRole(userData.role);
+          } else {
+            setErrorMessage('User not found in the database.');
+            console.log('User not found in the database');
+            auth.signOut();
+          }
+          setLoggingIn(false);
+        }).catch((error) => {
+          setErrorMessage('Wrong credentials.');
           console.log("Error signing in:", error.message);
           setLoggingIn(false);
         });
     }
   };
 
-
-  useEffect(()=>{
-    auth.onAuthStateChanged((userCred)=>{
-      if(userCred)
-      {
-        setAuthDone(true);
-        userCred.getIdToken().then((token1)=>{
-          // console.log(token);
-          setToken(token1);
-        })
-      }
-    })
-  })
-
-
-
-
-
-  const googleSignIn=()=>{
-    
-  const provider=new GoogleAuthProvider();
-  const auth1=getAuth(app);
-  auth1.languageCode='en';
-  signInWithPopup(auth, provider)
-  .then((result) => {
-    if(result)
-    {
-    setAuthDone(true);
-    // This gives you a Google Access Token. You can use it to access the Google API.
-    const credential = GoogleAuthProvider.credentialFromResult(result);
-    const token1 = credential.accessToken;
-    setToken(token1);
-    // The signed-in user info.
-    const user = result.user;
-    // IdP data available using getAdditionalUserInfo(result)
-    // ...
+  const handleRoleChange = (role) => {
+    if (selectedRole.includes(role)) {
+      setSelectedRole(selectedRole.filter(r => r !== role));
+    } else {
+      setSelectedRole([...selectedRole, role]);
     }
-  }).catch((error) => {
-    // Handle Errors here.
-    const errorCode = error.code;
-    const errorMessage = error.message;
-    // The email of the user's account used.
-    const email = error.customData.email;
-    // The AuthCredential type that was used.
-    const credential = GoogleAuthProvider.credentialFromError(error);
-    // ...
-  });
+  };
 
-
-  }
-
+  const googleSignIn = () => {
+    const provider = new GoogleAuthProvider();
+    const auth1 = getAuth(app);
+    auth1.languageCode = 'en';
+    signInWithPopup(auth, provider)
+      .then((result) => {
+        if (result) {
+          const credential = GoogleAuthProvider.credentialFromResult(result);
+          const token1 = credential.accessToken;
+          setToken(token1);
+        }
+      }).catch((error) => {
+        const errorMessage = error.message;
+        console.log("Google sign-in error:", errorMessage);
+      });
+  };
 
   return (
     <RootBox>
       <ImageContainer>
         <RocketImage src="https://img.pikbest.com/background/20220119/vector-flat-night-sky-stars-scene-advertising-background_6232470.jpg!sw800" alt="nightsky" />
         <TextOverlay>
-          <Typography variant="h4" gutterBottom style={{fontWeight: 'bold' }}>
+          <Typography variant="h4" gutterBottom style={{ fontWeight: 'bold' }}>
             Supercharge your learning with the Virtual Labs Question Bank
           </Typography>
         </TextOverlay>
       </ImageContainer>
       <FormContainer>
-        <div id="modal-login" className="modal">
-          <div className="modal-content">
+        <Card sx={{ minWidth: 500, padding: '80px', bgcolor: 'grey.200' }}>
+          <CardContent>
             <Typography variant="h4" gutterBottom>{isSignUp ? 'Sign Up' : 'Login'}</Typography>
             <StyledForm id="login-form" onSubmit={handleFormSubmit}>
               <StyledInput
@@ -228,6 +218,7 @@ function LoginPage({email,setEmail,password,setPassword,token,setToken})
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Email address"
+                disabled={step === 2}
               />
               <StyledInput
                 type="password"
@@ -236,22 +227,48 @@ function LoginPage({email,setEmail,password,setPassword,token,setToken})
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Your password"
+                disabled={step === 2}
               />
               {errorMessage && <Alert severity='error' id="error_box_login_signup">{errorMessage}</Alert>}
-              <StyledButton variant="contained" color="primary" type="submit" disabled={loggingIn || signingUp}>
+              {isSignUp && step === 1 && (
+                <StyledButton variant="contained" color="primary" onClick={() => setStep(2)}>
+                  Next
+                </StyledButton>
+              )}
+              {isSignUp && step === 2 && (
+                <>
+                  <Typography variant="h6" gutterBottom>Select Role(s)</Typography>
+                  <FormControlLabel
+                    control={<Checkbox checked={selectedRole.includes('Administrator')} onChange={() => handleRoleChange('Administrator')} />}
+                    label="Administrator"
+                  />
+                  <FormControlLabel
+                    control={<Checkbox checked={selectedRole.includes('Contributor')} onChange={() => handleRoleChange('Contributor')} />}
+                    label="Contributor"
+                  />
+                  <FormControlLabel
+                    control={<Checkbox checked={selectedRole.includes('Question User')} onChange={() => handleRoleChange('Question User')} />}
+                    label="Question User"
+                  />
+                  <FormControlLabel
+                    control={<Checkbox checked={selectedRole.includes('Quiz Participant')} onChange={() => handleRoleChange('Quiz Participant')} />}
+                    label="Quiz Participant"
+                  />
+                </>
+              )}
+              <StyledButton variant="contained" color="primary" type="submit" disabled={loggingIn || signingUp || (isSignUp && step === 2 && selectedRole.length === 0)}>
                 {loggingIn ? 'Logging in...' : (signingUp ? 'Signing up...' : (isSignUp ? 'Sign Up' : 'Login'))}
               </StyledButton>
             </StyledForm>
-            <Button onClick={() => setIsSignUp(!isSignUp)} disabled={loggingIn || signingUp} id="toggle_login_signup">
+            <Button onClick={() => { setIsSignUp(!isSignUp); setStep(1); }} disabled={loggingIn || signingUp} id="toggle_login_signup">
               {isSignUp ? 'I already have an account' : 'I don\'t have an account'}
-            </Button> 
-            <GoogleButton id="google" onClick={()=>googleSignIn()}/>
-          </div>
-        </div>
+            </Button>
+            <GoogleButton id="google" onClick={googleSignIn} />
+          </CardContent>
+        </Card>
       </FormContainer>
     </RootBox>
   );
 }
 
-// export {email};
 export default LoginPage;

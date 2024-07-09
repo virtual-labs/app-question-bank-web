@@ -5,7 +5,7 @@ const MarkdownRenderer = ({ source, maxLines }) => {
   // Calculate the height based on the number of lines
   const lineHeight = 16; // Typical line height in pixels
   const containerHeight = maxLines ? `${maxLines * lineHeight}px` : `auto`;
-  console.log(containerHeight);
+  // console.log(containerHeight);
  
   // Apply CSS styles for scrollability
   const containerStyle = {

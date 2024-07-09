@@ -20,6 +20,18 @@ import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import FileCopyIcon from '@mui/icons-material/FileCopy';
 import { styled } from '@mui/system';
 import Confetti from 'react-confetti';
+import { doc, getDoc} from 'firebase/firestore';
+import { firebaseConfig } from "./firebaseConfig.js";
+import { initializeApp } from "firebase/app";
+import { getFirestore, collection, getDocs } from 'firebase/firestore';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { Link } from 'react-router-dom';
+import {CircularProgress, Container, Paper } from '@mui/material';
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+
 
 const RootBox = styled(Box)({
   display: 'flex',
@@ -75,7 +87,7 @@ const TextOverlay = styled(Box)({
   color: '#fff',
 });
 
-function UserProfilePage({ setquestions, email, setEmail, password, setPassword, token, setToken }) {
+function UserProfilePage({ setquestions, email, setEmail, password, setPassword, token, setToken ,selectedRole, setSelectedRole}) {
   useEffect(() => {
     setquestions([]);
   }, [setquestions]);
@@ -90,23 +102,55 @@ function UserProfilePage({ setquestions, email, setEmail, password, setPassword,
   });
   const [confettiActive, setConfettiActive] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true); // State to track loading status
+  // useEffect(() => {
+  //   const unsubscribe = auth.onAuthStateChanged(user => {
+  //     if (user) {
+  //       setUser(user);
+  //       user.getIdToken().then((token1) => {
+  //         setToken(token1);
+  //       })
+  //     }
+  //     else 
+  //     {
+  //       setUser(null);
+  //     }
+  //   });
+
+  //   return () => unsubscribe();
+  // }, []);
+
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged(user => {
-      if (user) {
-        setUser(user);
-        user.getIdToken().then((token1) => {
-          setToken(token1);
-        })
-      }
-      else 
-      {
-        setUser(null);
-      }
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, async(user) => {
+    if (user) {
+      // User is signed in, update state accordingly
+      setIsAuthenticated(true);
+      user.getIdToken().then((token1)=>{
+        // console.log(token);
+        setToken(token1);
+        });
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        if (userDoc.exists()) {
+        const userData = userDoc.data();
+        setSelectedRole(userData.role);
+        }
+        else {
+        console.error("No user data found!");
+        setIsAuthenticated(false);
+        }
+  
+    } else {
+      // No user is signed in, update state accordingly
+      setIsAuthenticated(false);
+    }
+    setIsLoading(false); // Set loading to false once the check is complete
     });
-
+  
     return () => unsubscribe();
-  }, []);
+  }, [selectedRole,setSelectedRole,setToken]);
 
   const handleUpdateProfile = () => {
     setUpdateMode(!updateMode);
@@ -168,9 +212,26 @@ function UserProfilePage({ setquestions, email, setEmail, password, setPassword,
     }
   };
 
+  if (!isAuthenticated) {
+    return (
+      <Container maxWidth="sm">
+        <Paper elevation={3} style={{ padding: '20px', marginTop: '20px', background: '#ffffff', color: '#333' }}>
+          <Typography variant="h6" align="center">Access Restricted</Typography>
+          <Typography variant="body1" align="center">Please log in to access this page.</Typography>
+          <Box display="flex" justifyContent="center" marginTop="20px">
+            <Button variant="contained" color="primary" component={Link} to="/login">
+              Go to Login
+            </Button>
+          </Box>
+        </Paper>
+      </Container>
+    );
+  }
+
+
   return (
     <>
-      <Navbar />
+      <Navbar selectedRole={selectedRole} setSelectedRole={setSelectedRole}/>
       <RootBox>
         <ContentContainer>
           <FormContainer>

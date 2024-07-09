@@ -16,15 +16,18 @@ import ClearIcon from '@mui/icons-material/Clear';
 import { ResizableBox } from 'react-resizable';
 import MarkdownRenderer from './MarkdownRenderer';
 import Chip from '@mui/material/Chip';
+import { doc, getDoc } from 'firebase/firestore';
+
 
 const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-const tags = [
-  { label: 'biology', color: '#26c6da' },
-  { label: 'chemistry', color: '#ff7043' },
-  { label: 'physics', color: '#9575cd' },
-  { label: 'mathematics', color: '#4db6ac' }
-];
+// const tags = [
+//   { label: 'biology', color: '#26c6da' },
+//   { label: 'chemistry', color: '#ff7043' },
+//   { label: 'physics', color: '#9575cd' },
+//   { label: 'mathematics', color: '#4db6ac' }
+// ];
 
 const difficulty_tags = [
   { label: 'Easy', color: 'Blue' },
@@ -32,12 +35,24 @@ const difficulty_tags = [
   { label: 'Hard', color: 'Hard' },
 ]
 
+
+
+const colorList = [
+  '#26c6da', '#ff7043', '#9575cd', '#4db6ac', '#ffca28',
+  '#ab47bc', '#29b6f6', '#66bb6a', '#ef5350', '#ffa726',
+  '#8d6e63', '#d4e157', '#5c6bc0', '#ec407a', '#78909c'
+];
+
+function getRandomColor() {
+  return colorList[Math.floor(Math.random() * colorList.length)];
+}
 // function restoreSearchVars()
 // {
 
 // }
 
-function QuestionList({ questions, setquestions, downloadList, setDownloadList, token, setToken }) {
+function QuestionList({ questions, setquestions, downloadList, setDownloadList, token, setToken, selectedRole, setSelectedRole ,tags,setTags}) {
+  
   // useEffect(()=>{
   //   setquestions([]);
   // },[setquestions]);
@@ -45,12 +60,50 @@ function QuestionList({ questions, setquestions, downloadList, setDownloadList, 
   // setquestions([]);
   // console.log("efbejd");
   // console.log(downloadList);
+
+  // const [tags, setTags] = useState([
+  // ]);
+
+
+  useEffect(() => {
+    const fetchTags = async () => {
+      try {
+        // console.log("iefbe");
+        const response = await fetch('http://localhost:3001/api/tags', {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch tags');
+        }
+
+        const data = await response.json();
+        console.log(data);
+        const tagsWithColors = data.tags.map(tag => ({
+          label: tag,
+          color: getRandomColor()
+        }));
+
+        setTags(tagsWithColors);
+      } catch (error) {
+        console.error('Error fetching tags:', error);
+      }
+    };
+
+    fetchTags();
+  }, [token]);
+
+
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [questionsPerPage, setQuestionsPerPage] = useState(10);
   const [selectedTag, setselectedTag] = useState([]);
-  const [selectedDifficulty, setSelectedDifficulty] = useState(null);
+  const [selectedDifficulty, setSelectedDifficulty] = useState('');
   const [errorMessage, setErrorMessage] = useState(null);
   const indexOfLastQuestion = currentPage * questionsPerPage;
   const indexOfFirstQuestion = indexOfLastQuestion - questionsPerPage;
@@ -60,23 +113,54 @@ function QuestionList({ questions, setquestions, downloadList, setDownloadList, 
   const [displayFlag, setDisplayFlag] = useState(false);
   const [loadingquestions, setLoadingQuestions] = useState(false);
   const [qemail, setQemail] = useState('');
+  // useEffect(() => {
+  //   const auth = getAuth();
+  //   const unsubscribe = onAuthStateChanged(auth, (user) => {
+  //     setIsAuthenticated(!!user);
+  //     setIsLoading(false);
+
+  //     if (user) {
+  //       user.getIdToken().then((token1) => {
+  //         // console.log(token);
+  //         setToken(token1);
+  //       })
+  //     }
+
+  //   });
+
+  //   return () => unsubscribe();
+  // }, []);
+
   useEffect(() => {
     const auth = getAuth();
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setIsAuthenticated(!!user);
-      setIsLoading(false);
-
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
+        // User is signed in, update state accordingly
+        setIsAuthenticated(true);
         user.getIdToken().then((token1) => {
           // console.log(token);
           setToken(token1);
-        })
-      }
+        });
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          setSelectedRole(userData.role);
+        }
+        else {
+          console.error("No user data found!");
+          setIsAuthenticated(false);
+        }
 
+      } else {
+        // No user is signed in, update state accordingly
+        setIsAuthenticated(false);
+      }
+      setIsLoading(false); // Set loading to false once the check is complete
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [selectedRole, setSelectedRole, setToken]);
+
 
   const handlePageChange = (page) => {
     // console.log(page);
@@ -304,6 +388,19 @@ function QuestionList({ questions, setquestions, downloadList, setDownloadList, 
 
   };
 
+  // console.log("Quest_list_role:",selectedRole);
+
+  if (!selectedRole.includes("Administrator") && !selectedRole.includes("Question User") && !selectedRole.includes("Quiz Participant")) {
+    return (
+      <Container maxWidth="sm">
+        <Paper elevation={3} style={{ padding: '20px', marginTop: '20px' }}>
+          <Typography variant="h6" align="center">Access Restricted</Typography>
+          <Typography variant="body1" align="center">You do not have the necessary permissions to submit a question.</Typography>
+        </Paper>
+      </Container>
+    );
+  }
+
   return (
     <div>
 
@@ -329,7 +426,7 @@ function QuestionList({ questions, setquestions, downloadList, setDownloadList, 
           ) : (
 
             <div>
-              <Navbar setquestions={setquestions} setDownloadlist={setDownloadList} />
+              <Navbar setquestions={setquestions} setDownloadlist={setDownloadList} selectedRole={selectedRole} setSelectedRole={setSelectedRole} />
               <Container maxWidth="md">
                 <Paper elevation={3} sx={{ padding: '20px', marginTop: '20px' }}>
                   <CardContent>
@@ -349,7 +446,7 @@ function QuestionList({ questions, setquestions, downloadList, setDownloadList, 
                         renderTags={(tagValue, getTagProps) =>
                           tagValue.map((option, index) => (
                             <Chip
-                            id="cancel_tag"
+                              id="cancel_tag"
                               label={option.label}
                               {...getTagProps({ index })}
                               style={{ margin: 2, backgroundColor: option.color }} // Apply the color to the Chip
@@ -381,7 +478,7 @@ function QuestionList({ questions, setquestions, downloadList, setDownloadList, 
                               <span>{option}</span>
                               {selectedDifficulty === option.toLowerCase() && (
 
-                                <IconButton onClick={clearDifficulty}  id='cross' edge="end" size="small" sx={{ marginLeft: 'auto' }}>
+                                <IconButton onClick={clearDifficulty} id='cross' edge="end" size="small" sx={{ marginLeft: 'auto' }}>
                                   <ClearIcon />
                                 </IconButton>
                               )}
@@ -394,7 +491,7 @@ function QuestionList({ questions, setquestions, downloadList, setDownloadList, 
                   </IconButton> */}
                     </div>
                     <FormControl sx={{ marginBottom: 2, width: '100%', display: 'flex', justifyContent: 'center' }}>
-                      <TextField  id = 'user' label="Contributor's Email" variant="outlined" value={qemail} onChange={(e) => setQemail(e.target.value)} />
+                      <TextField id='user' label="Contributor's Email" variant="outlined" value={qemail} onChange={(e) => setQemail(e.target.value)} />
                     </FormControl>
                     {errorMessage && (
                       <Typography id='error' variant="body2" color="error" gutterBottom sx={{ marginBottom: 2 }}>
@@ -416,7 +513,7 @@ function QuestionList({ questions, setquestions, downloadList, setDownloadList, 
                         ))}
                       </Select>
                     </FormControl>
-                    <Button id ="search_button" onClick={searchDB} variant="contained" color="primary">Search</Button>
+                    <Button id="search_button" onClick={searchDB} variant="contained" color="primary">Search</Button>
                     {
                       loadingquestions && (selectedTag.length !== 0 || selectedDifficulty || qemail) && (
                         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>

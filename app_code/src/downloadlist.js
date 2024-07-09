@@ -6,13 +6,22 @@ import Typography from '@mui/material/Typography';
 import ClearIcon from '@mui/icons-material/Clear';
 import { saveAs } from 'file-saver';
 import Navbar from './Navbar';
-import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+// import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
 import { Link } from 'react-router-dom';
 import { Box, Button, CircularProgress, Container, Paper } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import {auth} from './firebaseConfig'
+import { doc, getDoc} from 'firebase/firestore';
+import { firebaseConfig } from "./firebaseConfig.js";
+import { initializeApp } from "firebase/app";
+import { getFirestore, collection, getDocs } from 'firebase/firestore';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
 
-function DownloadList({ downloadList, setDownloadList, setquestions ,token,setToken}) {
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+
+function DownloadList({ downloadList, setDownloadList, setquestions ,token,setToken, selectedRole, setSelectedRole}) {
 
   useEffect(()=>{
     setquestions([]);
@@ -61,28 +70,61 @@ function DownloadList({ downloadList, setDownloadList, setquestions ,token,setTo
   const [isLoading, setIsLoading] = useState(true); // State to track loading status
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  useEffect(() => {
-    const auth = getAuth();
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        // User is signed in, update state accordingly
-        setIsAuthenticated(true);
+  // useEffect(() => {
+  //   const auth = getAuth();
+  //   const unsubscribe = onAuthStateChanged(auth, (user) => {
+  //     if (user) {
+  //       // User is signed in, update state accordingly
+  //       setIsAuthenticated(true);
 
-              user.getIdToken().then((token1)=>{
-          // console.log(token);
-          setToken(token1);
-        })
+  //             user.getIdToken().then((token1)=>{
+  //         // console.log(token);
+  //         setToken(token1);
+  //       })
 
-      } else {
-        // No user is signed in, update state accordingly
-        setIsAuthenticated(false);
-      }
-      setIsLoading(false); // Set loading to false once the check is complete
-    });
+  //     } else {
+  //       // No user is signed in, update state accordingly
+  //       setIsAuthenticated(false);
+  //     }
+  //     setIsLoading(false); // Set loading to false once the check is complete
+  //   });
 
-    // Cleanup subscription on unmount
-    return () => unsubscribe();
-  }, [navigate]);
+  //   // Cleanup subscription on unmount
+  //   return () => unsubscribe();
+  // }, [navigate]);
+
+
+
+
+useEffect(() => {
+	const auth = getAuth();
+	const unsubscribe = onAuthStateChanged(auth, async(user) => {
+	if (user) {
+		// User is signed in, update state accordingly
+		setIsAuthenticated(true);
+		user.getIdToken().then((token1)=>{
+			// console.log(token);
+			setToken(token1);
+		  });
+		  const userDoc = await getDoc(doc(db, 'users', user.uid));
+		  if (userDoc.exists()) {
+			const userData = userDoc.data();
+			setSelectedRole(userData.role);
+		  }
+		  else {
+			console.error("No user data found!");
+			setIsAuthenticated(false);
+		  }
+
+	} else {
+		// No user is signed in, update state accordingly
+		setIsAuthenticated(false);
+	}
+	setIsLoading(false); // Set loading to false once the check is complete
+	});
+
+	return () => unsubscribe();
+}, [selectedRole,setSelectedRole,setToken]);
 
   if (isLoading) {
     return (
@@ -108,9 +150,22 @@ function DownloadList({ downloadList, setDownloadList, setquestions ,token,setTo
     );
   }
 
+  console.log("downloadlist_role",selectedRole);
+
+  if (!selectedRole.includes("Administrator")  && !selectedRole.includes("Question User")  && !selectedRole.includes("Quiz Participant")) {
+    return (
+      <Container maxWidth="sm">
+        <Paper elevation={3} style={{ padding: '20px', marginTop: '20px' }}>
+          <Typography variant="h6" align="center">Access Restricted</Typography>
+          <Typography variant="body1" align="center">You do not have the necessary permissions to submit a question.</Typography>
+        </Paper>
+      </Container>
+    );
+}
+
   return (
     <div style={{ background: '#f5f5f5', minHeight: '100vh' }}>
-      <Navbar setQuestions={setquestions} setDownloadList={setDownloadList} />
+      <Navbar setQuestions={setquestions} setDownloadList={setDownloadList} selectedRole={selectedRole} setSelectedRole={setSelectedRole} />
       <Card sx={{ margin: 'auto', maxWidth: 600, padding: 2, background: '#ffffff', color: '#333' }}>
         <CardContent style={{ textAlign: 'center' }}>
           <Typography variant="h5">Download List</Typography>
