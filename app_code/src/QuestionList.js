@@ -69,7 +69,7 @@ function QuestionList({ questions, setquestions, downloadList, setDownloadList, 
     const fetchTags = async () => {
       try {
         // console.log("iefbe");
-        const response = await fetch('http://localhost:3001/api/tags', {
+        const response = await fetch('https://vlabs-question-bank.el.r.appspot.com/api/tags', {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`
