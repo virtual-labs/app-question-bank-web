@@ -254,7 +254,7 @@ function Form(token) {
 				"questions": list_to_be_sent
 			};
 			console.log(token.token);
-			fetch('https://vlabs-question-bank.el.r.appspot.com/api/questions',
+			fetch('http://vlabs-question-bank.el.r.appspot.com/api/questions',
 				{
 					method: 'POST',
 					headers: {

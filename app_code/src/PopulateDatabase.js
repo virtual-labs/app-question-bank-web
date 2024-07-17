@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Alert } from '@mui/material';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
@@ -10,7 +11,7 @@ import { getFirestore, collection, addDoc } from 'firebase/firestore';
 import { firebaseConfig } from "./firebaseConfig.js";
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
-import {Container , Paper} from '@mui/material';
+import { Container, Paper } from '@mui/material';
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
@@ -34,7 +35,7 @@ const FormBox = styled(Box)({
     marginTop: '20px',
 });
 
-const PopulateDatabasePage = ({ selectedRole, setSelectedRole, setToken,token }) => {
+const PopulateDatabasePage = ({ selectedRole, setSelectedRole, setToken, token }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [githubLink, setGithubLink] = useState('');
@@ -43,8 +44,7 @@ const PopulateDatabasePage = ({ selectedRole, setSelectedRole, setToken,token })
     useEffect(() => {
         const auth = getAuth();
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
-            if (user) 
-            {
+            if (user) {
                 setIsAuthenticated(true);
                 const token1 = await user.getIdToken();
                 setToken(token1);
@@ -69,13 +69,13 @@ const PopulateDatabasePage = ({ selectedRole, setSelectedRole, setToken,token })
     const handleFetchFile = async () => {
         console.log(githubLink);
         try {
-            const proxyUrl = `https://vlabs-question-bank.el.r.appspot.com/fetch-github-file?url=${encodeURIComponent(githubLink)}`;
+            const proxyUrl = `http://vlabs-question-bank.el.r.appspot.com/fetch-github-file?url=${encodeURIComponent(githubLink)}`;
             const response = await fetch(proxyUrl, {
                 method: 'GET',
                 headers: {
-                  'Authorization': `Bearer ${token}`
+                    'Authorization': `Bearer ${token}`
                 }
-              });
+            });
             if (!response.ok) {
                 console.log(response);
                 throw new Error('Network response was not ok');
@@ -83,7 +83,7 @@ const PopulateDatabasePage = ({ selectedRole, setSelectedRole, setToken,token })
             const data = await response.json();
             setFileContents(data);
             // console.log(data);
-            
+
             // Send the fetched file contents to your backend
             // console.log(token);
             // const apiUrl = 'http://localhost:3001/api/questions'; // Update with your backend API URL
@@ -106,16 +106,16 @@ const PopulateDatabasePage = ({ selectedRole, setSelectedRole, setToken,token })
         }
     };
 
-    if (!selectedRole.includes("Administrator") ) {
+    if (!selectedRole.includes("Administrator")) {
         return (
-          <Container maxWidth="sm">
-            <Paper elevation={3} style={{ padding: '20px', marginTop: '20px' }}>
-              <Typography variant="h6" align="center">Access Restricted</Typography>
-              <Typography variant="body1" align="center">You do not have the necessary permissions to submit a question.</Typography>
-            </Paper>
-          </Container>
+            <Container maxWidth="sm">
+                <Paper elevation={3} style={{ padding: '20px', marginTop: '20px' }}>
+                    <Typography variant="h6" align="center">Access Restricted</Typography>
+                    <Typography variant="body1" align="center">You do not have the necessary permissions to submit a question.</Typography>
+                </Paper>
+            </Container>
         );
-      }
+    }
 
 
     return (
@@ -143,7 +143,16 @@ const PopulateDatabasePage = ({ selectedRole, setSelectedRole, setToken,token })
                 </FormBox>
                 {fileContents && (
                     <Box mt={4}>
-                        <Typography variant="body1">
+                        {fileContents.status === "success" ? (
+                            <Alert severity="success">
+                                Successful
+                            </Alert>
+                        ) : (
+                            <Alert severity="error">
+                                Error: {fileContents.message || "An error occurred"}
+                            </Alert>
+                        )}
+                        <Typography variant="body1" mt={2}>
                             File Contents: {JSON.stringify(fileContents)}
                         </Typography>
                     </Box>
