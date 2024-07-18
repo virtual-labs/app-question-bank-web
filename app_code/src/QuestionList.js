@@ -69,7 +69,7 @@ function QuestionList({ questions, setquestions, downloadList, setDownloadList, 
     const fetchTags = async () => {
       try {
         // console.log("iefbe");
-        const response = await fetch('http://localhost:3001/api/tags', {
+        const response = await fetch('https://vlabs-question-bank.el.r.appspot.com/api/tags', {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`
@@ -285,7 +285,7 @@ function QuestionList({ questions, setquestions, downloadList, setDownloadList, 
           const tagArray = selectedTag.map(tag => tag.label);
           const passing = tagArray.join(",")
           // if ((questionData.selectedTags.includes(String(selectedTag.label)) && questionData.difficulty == selectedDifficulty))
-          const data = await fetch_requests(`http://localhost:3001?tags=${passing}&difficulty=${selectedDifficulty}&user=${qemail}`);
+          const data = await fetch_requests(`https://vlabs-question-bank.el.r.appspot.com/api/questions?tags=${passing}&difficulty=${selectedDifficulty}&user=${qemail}`);
           //  console.log(data.data.questions);
           questionList = data.data.questions;
         }
@@ -295,7 +295,7 @@ function QuestionList({ questions, setquestions, downloadList, setDownloadList, 
           const tagArray = selectedTag.map(tag => tag.label);
           const passing = tagArray.join(",")
           // if ((questionData.selectedTags.includes(String(selectedTag.label)) && questionData.difficulty == selectedDifficulty))
-          const data = await fetch_requests(`http://localhost:3001/api/questions?tags=${passing}&user=${qemail}`);
+          const data = await fetch_requests(`https://vlabs-question-bank.el.r.appspot.com/api/questions?tags=${passing}&user=${qemail}`);
           //  console.log(data.data.questions);
           questionList = data.data.questions;
         }
@@ -306,14 +306,14 @@ function QuestionList({ questions, setquestions, downloadList, setDownloadList, 
           const tagArray = selectedTag.map(tag => tag.label);
           const passing = tagArray.join(",")
           // if ((questionData.selectedTags.includes(String(selectedTag.label)) && questionData.difficulty == selectedDifficulty))
-          const data = await fetch_requests(`http://localhost:3001/api/questions?tags=${passing}&difficulty=${selectedDifficulty}`)
+          const data = await fetch_requests(`https://vlabs-question-bank.el.r.appspot.com/api/questions?tags=${passing}&difficulty=${selectedDifficulty}`)
           //  console.log(data.data.questions);
           questionList = data.data.questions;
         }
         else if (selectedDifficulty && qemail) {
           console.log('D');
 
-          const data = await fetch_requests(`http://localhost:3001/api/questions?difficulty=${selectedDifficulty}&user=${qemail}`);
+          const data = await fetch_requests(`https://vlabs-question-bank.el.r.appspot.com/api/questions?difficulty=${selectedDifficulty}&user=${qemail}`);
           // console.log(data.data.questions);
           questionList = data.data.questions;
         }
@@ -322,7 +322,7 @@ function QuestionList({ questions, setquestions, downloadList, setDownloadList, 
 
           const tagArray = selectedTag.map(tag => tag.label);
           const passing = tagArray.join(",")
-          const data = await fetch_requests(`http://localhost:3001/api/questions?tags=${passing}`);
+          const data = await fetch_requests(`https://vlabs-question-bank.el.r.appspot.com/api/questions/api/questions?tags=${passing}`);
           // console.log(data.data.questions);
           questionList = data.data.questions;
 
@@ -330,14 +330,14 @@ function QuestionList({ questions, setquestions, downloadList, setDownloadList, 
         else if (selectedDifficulty) {
           console.log('F');
 
-          const data = await fetch_requests(`http://localhost:3001/api/questions?difficulty=${selectedDifficulty}`);
+          const data = await fetch_requests(`https://vlabs-question-bank.el.r.appspot.com/api/questions?difficulty=${selectedDifficulty}`);
           // console.log(data.data.questions);
           questionList = data.data.questions;
         }
         else {
           console.log('G');
 
-          const data = await fetch_requests(`http://localhost:3001/api/questions?user=${qemail}`);
+          const data = await fetch_requests(`https://vlabs-question-bank.el.r.appspot.com/api/questions?user=${qemail}`);
           // console.log(data.data.questions);
           questionList = data.data.questions;
         }

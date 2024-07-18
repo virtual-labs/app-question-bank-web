@@ -69,7 +69,7 @@ const PopulateDatabasePage = ({ selectedRole, setSelectedRole, setToken, token }
     const handleFetchFile = async () => {
         console.log(githubLink);
         try {
-            const proxyUrl = `http://localhost:3001/fetch-github-file?url=${encodeURIComponent(githubLink)}`;
+            const proxyUrl = `https://vlabs-question-bank.el.r.appspot.com/fetch-github-file?url=${encodeURIComponent(githubLink)}`;
             const response = await fetch(proxyUrl, {
                 method: 'GET',
                 headers: {
