@@ -82,7 +82,7 @@ useEffect(() => {
     const fetchTags = async () => {
       try {
         // console.log("iefbe");
-        const response = await fetch('http://vlabs-question-bank.el.r.appspot.com/api/tags', {
+        const response = await fetch('http://localhost:3001/api/tags', {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`
@@ -140,7 +140,8 @@ useEffect(() => {
           .then((response) => {
             return response.json(); // Parse the JSON response
           })
-          .then((data) => {
+          .then((data) => 
+          {
             // console.log(data);
             return data; // Process the data received from the server
           })
@@ -176,8 +177,8 @@ useEffect(() => {
             const tagArray = selectedTag.map(tag => tag.label);
           const passing = tagArray.join(",")
           // if ((questionData.selectedTags.includes(String(selectedTag.label)) && questionData.difficulty == selectedDifficulty))
-          const data = await fetch_requests(`http://vlabs-question-bank.el.r.appspot.com/api/questions?tags=${passing}`)
-           console.log(data);
+          const data = await fetch_requests(`http://localhost:3001/api/questions?tags=${passing}`)
+          console.log(data);
           questionList = data.data.questions;
 
         setquizQuestions(questionList.slice(0, 10));

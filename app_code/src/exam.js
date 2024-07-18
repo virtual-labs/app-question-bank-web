@@ -173,21 +173,22 @@ const Exam = ({ quizData, downloadList, setdownloadlist, setquestions, token, se
     useEffect(() => {
         const handleResize = () => {
             if (window.innerWidth <= 650) {
-                setShowNavigation(false);
-                setMenuClicked(false);
+                setShowNavigation(menuClicked);
             } else {
                 setShowNavigation(true);
             }
             console.log(window.innerWidth, "hi");
             console.log(showNavigation, menuClicked);
         };
-
+    
         window.addEventListener('resize', handleResize);
-
+        handleResize(); // Call once to set the initial state based on the current window size
+    
         return () => window.removeEventListener('resize', handleResize);
-    }, []);
+    }, [menuClicked]);
 
     const toggleNavigation = () => {
+        setShowNavigation(prevState => !prevState);
         setMenuClicked(prevState => !prevState);
         console.log(showNavigation, menuClicked);
     };
@@ -222,17 +223,70 @@ const Exam = ({ quizData, downloadList, setdownloadlist, setquestions, token, se
 
     return (
         <Container maxWidth="100%" sx={{ margin: '0 auto', mt: '5vh' }}>
-            {/* <Navbar setquestions={setquestions} setdownloadlist={setdownloadlist} selectedRole={selectedRole} setSelectedRole={setSelectedRole} /> */}
             <AppBar position="static">
-                {/* <Avatar alt="Logo" src="../public/favicon.png" sx={{ mr: 1 }} /> */}
                 <Toolbar>
                     <Typography variant="h6" sx={{ flexGrow: 1, textAlign: 'center' }}>
                         Virtual Labs Quiz
                     </Typography>
                 </Toolbar>
             </AppBar>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: '3vh', width: '100%' }}>
-                <Box sx={{ width: showNavigation ? '80%' : menuClicked ? '40%' : '100%', position: 'relative' }}>
+            {isSmallScreen && (
+                <IconButton className="menu-button" onClick={toggleNavigation} sx={{ display: 'block', margin: '0 auto' }}>
+                    <Menu />
+                </IconButton>
+            )}
+            <Box sx={{ display: 'flex', flexDirection: isSmallScreen ? 'column' : 'row', justifyContent: 'space-between', mt: '3vh', width: '100%' }}>
+                {isSmallScreen && showNavigation && (
+                    <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', mt: '5vh' }}>
+                        <Typography variant="h6" sx={{ mb: '2vh' }}>
+                            Navigation Pane
+                        </Typography>
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', width: '100%' }}>
+                            {questionStatuses.map((status, circleIndex) => (
+                                <IconButton
+                                    key={circleIndex}
+                                    onClick={() => handleCircleClick(circleIndex)}
+                                    sx={{
+                                        width: isSmallScreen ? '30px' : '40px',
+                                        height: isSmallScreen ? '30px' : '40px',
+                                        backgroundColor: circleIndex === currentQuestionIndex ? 'orange' : status,
+                                        color: 'black',
+                                        fontWeight: 'bold',
+                                        fontSize: '0.8rem',
+                                        borderRadius: '50%',
+                                        '&:hover': {
+                                            backgroundColor: 'darkgrey',
+                                        },
+                                    }}
+                                >
+                                    {circleIndex + 1}
+                                </IconButton>
+                            ))}
+                        </Box>
+                        <Typography variant="body2" sx={{ mt: '2vh' }}>
+                            Key:
+                        </Typography>
+                        <Box sx={{ display: 'flex', alignItems: 'center', mt: '1vh' }}>
+                            <Box sx={{ width: '2vw', height: '2vw', backgroundColor: 'green', mr: '1vw' }}></Box>
+                            <Typography variant="body2">Answered</Typography>
+                        </Box>
+                        <Box sx={{ display: 'flex', alignItems: 'center', mt: '1vh' }}>
+                            <Box sx={{ width: '2vw', height: '2vw', backgroundColor: 'purple', mr: '1vw' }}></Box>
+                            <Typography variant="body2">Marked for Review</Typography>
+                        </Box>
+                        <Box sx={{ display: 'flex', alignItems: 'center', mt: '1vh' }}>
+                            <Box sx={{ width: '2vw', height: '2vw', backgroundColor: 'yellow', mr: '1vw' }}></Box>
+                            <Typography variant="body2">Not Answered</Typography>
+                        </Box>
+                        <Button variant="contained" color="primary" sx={{ mt: '2vh' }} onClick={handleMarkForReview}>
+                            Mark for Review
+                        </Button>
+                        <Button variant="contained" color="secondary" sx={{ mt: '2vh' }} onClick={handleEndQuiz}>
+                            End Quiz
+                        </Button>
+                    </Box>
+                )}
+                <Box sx={{ width: isSmallScreen ? '100%' : showNavigation ? '80%' : menuClicked ? '40%' : '100%', position: 'relative' }}>
                     <Typography
                         variant="body1"
                         sx={{
@@ -260,9 +314,6 @@ const Exam = ({ quizData, downloadList, setdownloadlist, setquestions, token, se
                                 >
                                     Question {`${(parseInt(index) + 1).toString().padStart(2, '0')}`}
                                 </Typography>
-                                {/* <Typography variant="body1" sx={{ mt: '2vh', fontWeight: 'bold', display: 'flex', justifyContent: 'left' }}>
-                                    Tags and Difficulty:
-                                </Typography> */}
                                 <div style={{
                                     marginTop: '2rem', // Increase distance between Question and Tags
                                     display: 'flex',
@@ -278,7 +329,6 @@ const Exam = ({ quizData, downloadList, setdownloadlist, setquestions, token, se
                                         marginBottom: isSmallScreen ? '1rem' : '0'
                                     }}>
                                         {selectedQuestion.selectedTags && selectedQuestion.selectedTags.map((tag, index) => {
-                                            // Select a random color for the current tag
                                             const tagColor = 'light blue';
                                             return (
                                                 <Chip key={index} label={tag} style={{ backgroundColor: tagColor }} />
@@ -384,74 +434,70 @@ const Exam = ({ quizData, downloadList, setdownloadlist, setquestions, token, se
                                     <Button variant="contained" color="primary" sx={{ mt: '1vh', width: '20vw' }} onClick={handleDeselect}>
                                         Clear Response
                                     </Button>
-
-
                                 </FormControl>
-
                             </CardContent>
                         </Card>
                     )}
-                    <div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
-                        <IconButton onClick={handlePreviousQuestion} disabled={parseInt(index) === 0} sx={{ backgroundColor: 'lightgreen', color: 'gray', mr: '1.5vw' }}>
-                            <ArrowBack />
-                        </IconButton>
-                        <IconButton onClick={handleNextQuestion} disabled={parseInt(index) === quizData.length - 1} sx={{ backgroundColor: 'lightgreen', color: 'gray', ml: '1.5vw' }}>
-                            <ArrowForward />
-                        </IconButton>
-                    </div>
-                </Box>
-                <Box sx={{ width: showNavigation ? '20%' : menuClicked ? '60%' : '0%', display: !menuClicked && !showNavigation ? 'none' : 'flex', flexDirection: 'column', alignItems: 'center', mt: '5vh' }}>
-                    <Typography variant="h6" sx={{ mb: '2vh' }}>
-                        Navigation Pane
-                    </Typography>
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', width: '100%' }}>
-                        {questionStatuses.map((status, circleIndex) => (
-                            <IconButton
-                                key={circleIndex}
-                                onClick={() => handleCircleClick(circleIndex)}
-                                sx={{
-                                    width: isSmallScreen ? '30px' : '40px',
-                                    height: isSmallScreen ? '30px' : '40px',
-                                    backgroundColor: circleIndex === currentQuestionIndex ? 'orange' : status,
-                                    color: 'black',
-                                    fontWeight: 'bold',
-                                    fontSize: '0.8rem',
-                                    borderRadius: '50%',
-                                    '&:hover': {
-                                        backgroundColor: 'darkgrey',
-                                    },
-                                }}
-                            >
-                                {circleIndex + 1}
+                    {!isSmallScreen && (
+                        <div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
+                            {/* <IconButton onClick={handlePreviousQuestion} disabled={parseInt(index) === 0} sx={{ backgroundColor: 'lightgreen', color: 'gray', mr: '1.5vw' }}>
+                                <ArrowBack />
                             </IconButton>
-                        ))}
-                    </Box>
-                    <Typography variant="body2" sx={{ mt: '2vh' }}>
-                        Key:
-                    </Typography>
-                    <Box sx={{ display: 'flex', alignItems: 'center', mt: '1vh' }}>
-                        <Box sx={{ width: '2vw', height: '2vw', backgroundColor: 'green', mr: '1vw' }}></Box>
-                        <Typography variant="body2">Answered</Typography>
-                    </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', mt: '1vh' }}>
-                        <Box sx={{ width: '2vw', height: '2vw', backgroundColor: 'purple', mr: '1vw' }}></Box>
-                        <Typography variant="body2">Marked for Review</Typography>
-                    </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', mt: '1vh' }}>
-                        <Box sx={{ width: '2vw', height: '2vw', backgroundColor: 'yellow', mr: '1vw' }}></Box>
-                        <Typography variant="body2">Not Answered</Typography>
-                    </Box>
-                    <Button variant="contained" color="primary" sx={{ mt: '2vh' }} onClick={handleMarkForReview}>
-                        Mark for Review
-                    </Button>
-                    <Button variant="contained" color="secondary" sx={{ mt: '2vh' }} onClick={handleEndQuiz}>
-                        End Quiz
-                    </Button>
+                            <IconButton onClick={handleNextQuestion} disabled={parseInt(index) === quizData.length - 1} sx={{ backgroundColor: 'lightgreen', color: 'gray', ml: '1.5vw' }}>
+                                <ArrowForward />
+                            </IconButton> */}
+                        </div>
+                    )}
                 </Box>
-                {!showNavigation && (
-                    <IconButton className="menu-button" onClick={toggleNavigation}>
-                        <Menu />
-                    </IconButton>
+                {!isSmallScreen && showNavigation && (
+                    <Box sx={{ width: '20%', display: 'flex', flexDirection: 'column', alignItems: 'center', mt: '5vh' }}>
+                        <Typography variant="h6" sx={{ mb: '2vh' }}>
+                            Navigation Pane
+                        </Typography>
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', width: '100%' }}>
+                            {questionStatuses.map((status, circleIndex) => (
+                                <IconButton
+                                    key={circleIndex}
+                                    onClick={() => handleCircleClick(circleIndex)}
+                                    sx={{
+                                        width: isSmallScreen ? '30px' : '40px',
+                                        height: isSmallScreen ? '30px' : '40px',
+                                        backgroundColor: circleIndex === currentQuestionIndex ? 'orange' : status,
+                                        color: 'black',
+                                        fontWeight: 'bold',
+                                        fontSize: '0.8rem',
+                                        borderRadius: '50%',
+                                        '&:hover': {
+                                            backgroundColor: 'darkgrey',
+                                        },
+                                    }}
+                                >
+                                    {circleIndex + 1}
+                                </IconButton>
+                            ))}
+                        </Box>
+                        <Typography variant="body2" sx={{ mt: '2vh' }}>
+                            Key:
+                        </Typography>
+                        <Box sx={{ display: 'flex', alignItems: 'center', mt: '1vh' }}>
+                            <Box sx={{ width: '2vw', height: '2vw', backgroundColor: 'green', mr: '1vw' }}></Box>
+                            <Typography variant="body2">Answered</Typography>
+                        </Box>
+                        <Box sx={{ display: 'flex', alignItems: 'center', mt: '1vh' }}>
+                            <Box sx={{ width: '2vw', height: '2vw', backgroundColor: 'purple', mr: '1vw' }}></Box>
+                            <Typography variant="body2">Marked for Review</Typography>
+                        </Box>
+                        <Box sx={{ display: 'flex', alignItems: 'center', mt: '1vh' }}>
+                            <Box sx={{ width: '2vw', height: '2vw', backgroundColor: 'yellow', mr: '1vw' }}></Box>
+                            <Typography variant="body2">Not Answered</Typography>
+                        </Box>
+                        <Button variant="contained" color="primary" sx={{ mt: '2vh' }} onClick={handleMarkForReview}>
+                            Mark for Review
+                        </Button>
+                        <Button variant="contained" color="secondary" sx={{ mt: '2vh' }} onClick={handleEndQuiz}>
+                            End Quiz
+                        </Button>
+                    </Box>
                 )}
             </Box>
         </Container>

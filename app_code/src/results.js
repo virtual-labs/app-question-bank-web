@@ -83,6 +83,21 @@ const Results = ({ markedOptions, quizData, setQuestions, selectedRole, setSelec
                     {
                         markedOption = "d";
                     }
+                    if(question.correctAnswer === 1)
+                    {
+                        question.correctAnswer = "a";   
+                    }
+                    else if(question.correctAnswer === 2)
+                    {
+                        question.correctAnswer = "b";
+                    }
+                    else if(question.correctAnswer === 3)
+                    {
+                        question.correctAnswer = "c";
+                    }
+                    else if(question.correctAnswer=="d")
+                        question.correctAnswer = "d";
+
                 if (markedOption === question.correctAnswer) 
                 {
                     correct++;

@@ -126,7 +126,7 @@ const Review = ({ quizData, downloadList, setdownloadlist, setquestions, token, 
 
     const getQuestionStatus = (index) => {
         let markedOption = markedOptions[index];
-        const correctAnswer = quizData[index].correctAnswer;
+        let correctAnswer = quizData[index].correctAnswer;
         console.log(correctAnswer);
         if (markedOption === null || markedOption === undefined || markedOption === "") {
             return 'grey';
@@ -147,6 +147,25 @@ const Review = ({ quizData, downloadList, setdownloadlist, setquestions, token, 
             {
                 markedOption="d";
             }
+            
+        
+            if(correctAnswer===1)
+                {
+                    correctAnswer="a";
+                }
+            else if(correctAnswer===2)
+                {
+                correctAnswer="b";
+                }
+            else if(correctAnswer===3)
+                {
+                    correctAnswer="c";
+                }
+            else if(correctAnswer===4)
+                {
+                    correctAnswer="d";
+                }
+
 
         return markedOption === correctAnswer ? 'green' : 'red';
     };
@@ -252,7 +271,7 @@ const Review = ({ quizData, downloadList, setdownloadlist, setquestions, token, 
                                                     display: 'block',
                                                     margin: '1vh',
                                                     padding: '1vh',
-                                                    backgroundColor: key === selectedQuestion.correctAnswer ? 'green' :
+                                                    backgroundColor: key === selectedQuestion.correctAnswer||keyToNumberMap[key]===selectedQuestion.correctAnswer ? 'green' :
                                                         (numberToLetterMap[markedOptions[parseInt(index)]] === key && key !== selectedQuestion.correctAnswer) ? 'red' : 'white',
                                                     color: 'black',
                                                     borderRadius: '4px',

@@ -69,7 +69,7 @@ const PopulateDatabasePage = ({ selectedRole, setSelectedRole, setToken, token }
     const handleFetchFile = async () => {
         console.log(githubLink);
         try {
-            const proxyUrl = `http://vlabs-question-bank.el.r.appspot.com/fetch-github-file?url=${encodeURIComponent(githubLink)}`;
+            const proxyUrl = `http://localhost:3001/fetch-github-file?url=${encodeURIComponent(githubLink)}`;
             const response = await fetch(proxyUrl, {
                 method: 'GET',
                 headers: {
@@ -81,6 +81,8 @@ const PopulateDatabasePage = ({ selectedRole, setSelectedRole, setToken, token }
                 throw new Error('Network response was not ok');
             }
             const data = await response.json();
+            console.log(data);
+
             setFileContents(data);
             // console.log(data);
 
@@ -141,22 +143,29 @@ const PopulateDatabasePage = ({ selectedRole, setSelectedRole, setToken, token }
                         Fetch File
                     </Button>
                 </FormBox>
-                {fileContents && (
+                {fileContents!==null && fileContents!==undefined && (
                     <Box mt={4}>
                         {fileContents.status === "success" ? (
                             <Alert severity="success">
-                                Successful
+                                All JSON files are populated
+                            </Alert>
+                        ) : fileContents.message===('No Version Supported') ? (
+                            <Alert severity="error">
+                                Error: No Version Supported
+                            </Alert>
+                        ) : fileContents.message===('No JSON file present in REPO') ? (
+                            <Alert severity="error">
+                                Error: No JSON file present in REPO
                             </Alert>
                         ) : (
                             <Alert severity="error">
-                                Error: {fileContents.message || "An error occurred"}
+                                Error: {fileContents.message || "An unknown error occurred"}
                             </Alert>
                         )}
-                        <Typography variant="body1" mt={2}>
-                            File Contents: {JSON.stringify(fileContents)}
-                        </Typography>
+                        
                     </Box>
                 )}
+
             </RootBox>
         </>
     );

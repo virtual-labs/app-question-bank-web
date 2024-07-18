@@ -28,13 +28,18 @@ import axios from 'axios';
 import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
 import { getStorage, ref, uploadBytes, uploadBytesResumable, getDownloadURL, Firestore } from 'firebase/storage';
-import { doc, getDoc, getFirestore } from 'firebase/firestore';
-import { firebaseConfig } from "./firebaseConfig.js"
-import { collection, addDoc } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js';
+import { getFirestore } from 'firebase/firestore';
+// import { firebaseConfig } from "./firebaseConfig.js"
+// import { collection, addDoc } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js';
 import { Center } from '@chakra-ui/react';
+import { doc, updateDoc } from "firebase/firestore";
+// import { db } from "./firebaseConfig.js"; 
+import { getDocs, where, collection, getDoc } from "firebase/firestore";
+import { app } from "./firebaseConfig.js"
 // const app = initializeApp(firebaseConfig);
-
-const db = getFirestore();
+import { query } from "firebase/firestore"
+const db = initializeApp(app)
+// const db = getFirestore();
 
 const EASY_DIFFICULTY = 10;
 const MEDIUM_DIFFICULTY = 20;
@@ -53,182 +58,181 @@ function getRandomColor() {
 
 async function findDocumentId(GIVENTEXT) {
 	try {
-	  const snapshot = await db.collection("questions").where("question", "==", GIVENTEXT).get();
-  
-	  if (snapshot.empty) {
-		console.log('No matching documents.');
-		return;
-	  }
-  
-	  // Assuming you want the ID of the first matching document
-	  const docId = snapshot.docs[0].id;
-	  console.log(`Matching document ID: ${docId}`);
-	  return docId;
-  
-	} catch (error) {
-	  console.error("Error querying documents:", error);
-	}
-  }
+		const snapshot = await db.collection("questions").where("question", "==", GIVENTEXT).get();
 
-
-function Form({ token, questionData,tags ,setTags}) {
-	const [comboBoxCount, setComboBoxCount] = useState(1);
-    const [selectedTags, setSelectedTags] = useState(questionData.selectedTags || []);
-    const [question, setQuestion] = useState(questionData.question || '');
-    const [optionA, setOptionA] = useState(questionData.answers["a"] || '');
-    const [optionB, setOptionB] = useState(questionData.answers["b"] || '');
-    const [optionC, setOptionC] = useState(questionData.answers["c"] || '');
-    const [optionD, setOptionD] = useState(questionData.answers["d"] || '');
-    const [optionE, setOptionE] = useState(questionData.answers["e"] || '');
-    const [optionF, setOptionF] = useState(questionData.answers["f"] || '');
-    const [explanationA, setExplanationA] = useState(questionData.explanations["a"] || '');
-    const [explanationB, setExplanationB] = useState(questionData.explanations["b"] || '');
-    const [explanationC, setExplanationC] = useState(questionData.explanations["c"] || '');
-    const [explanationD, setExplanationD] = useState(questionData.explanations["d"] || '');
-    const [explanationE, setExplanationE] = useState(questionData.explanations["e"] || '');
-    const [explanationF, setExplanationF] = useState(questionData.explanations["f"] || '');
-    const [CorrectOption, setCorrectOption] = useState(0);
-    const [difficulty, setDifficulty] = useState(questionData.difficulty || '');
-    const [errorMessage, setErrorMessage] = useState('');
-    const [image, setImageUpload] = useState(null);
-    const [imageUrl, setImageUrl] = useState(null);
-    const [previewVisible, setPreviewVisible] = useState(false);
-    const [previewPageVisible, setPreviewPageVisible] = useState(false);
-    const [version, setVersion] = useState(questionData.version);
-	const QID=findDocumentId(questionData.question);
-    const difficulties = obj[version].difficulty;
-
-    useEffect(() => {
-        const correctAnswerMap = {
-            "a": 1,
-            "b": 2,
-            "c": 3,
-            "d": 4,
-            "e": 5,
-            "f": 6
-        };
-        setCorrectOption(correctAnswerMap[questionData.correctAnswer] || 0);
-		if(questionData.difficulty=="easy"||questionData.difficulty=="beginner")
-			{
-				setDifficulty(0);
-			}
-			else if(questionData.difficulty=="medium"||questionData.difficulty=="intermediate")	
-			{
-				setDifficulty(1);
-			}
-			else if(questionData.difficulty=="hard"||questionData.difficulty=="advanced")
-			{
-				setDifficulty(2);
-			}
-    }, [questionData]);
-
-    const handleComboBoxChange = (event, value, comboBoxId) => {
-        setSelectedTags((prevSelectedTags) => {
-            const updatedTags = [...prevSelectedTags];
-            updatedTags[comboBoxId] = value;
-            return updatedTags;
-        });
-    };
-
-    const togglePreview = () => {
-        setPreviewVisible(!previewVisible);
-    };
-
-    const togglePreviewPage = () => {
-        if (!previewPageVisible) {
-            setPreviewVisible(true);
-        } else {
-            setPreviewVisible(false);
-        }
-        setPreviewPageVisible(!previewPageVisible);
-    };
-
-    const handleLogButtonClick = () => {
-        if (selectedTags.length === 0) {
-            setErrorMessage('Please select a tag from the list.');
-            return;
-        }
-
-        const isAllTagsValid = selectedTags.every(tag => tags.map(t => t.label).includes(tag));
-
-        if (!isAllTagsValid) {
-            setErrorMessage('Please select tags only from the list.');
-            return;
-        }
-
-        setSelectedTags([...selectedTags, ...selectedTags]);
-
-        // Remove selected tags from the available tags
-        const updatedTags = tags.filter(tag => !selectedTags.includes(tag.label));
-        setTags(updatedTags);
-        setSelectedTags([]);
-    };
-
-    const removeTagFromHistory = (indexToRemove) => {
-        const updatedSelectedTags = selectedTags.filter((_, index) => index !== indexToRemove);
-        setSelectedTags(updatedSelectedTags);
-        setTags(prevTags => [...prevTags, ...tags.filter(tag => tag.label === selectedTags[indexToRemove])]);
-    };
-
-    const handleChange = (event) => {
-        setDifficulty(event.target.value);
-    };
-
-    const handleChange2 = (event) => {
-        setCorrectOption(event.target.value);
-    };
-
-    const selectedTagObjects = selectedTags.map(tagLabel => tags.find(tag => tag.label === tagLabel));
-
-    const displayselectedTags = () => {
-        return (
-            <div>
-                {tags.length === 0 ? (
-                    <p>Loading tags...</p>
-                ) : (
-                    <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap' }}>
-                        {selectedTagObjects.map((tag, tagIndex) => (
-                            tag ? (
-                                <div
-                                    key={tagIndex}
-                                    style={{
-                                        display: 'inline-flex',
-                                        alignItems: 'center',
-                                        backgroundColor: tag.color,
-                                        color: '#fff',
-                                        paddingLeft: '10px',
-                                        paddingRight: '10px',
-                                        paddingTop: '5px',
-                                        paddingBottom: '5px',
-                                        borderRadius: '15px',
-                                        marginBottom: '5px',
-                                        marginRight: '10px',
-                                    }}
-                                >
-                                    {tag.label}
-                                    <IconButton
-                                        size="small"
-                                        onClick={() => removeTagFromHistory(tagIndex)}
-                                        style={{ marginLeft: '8px', color: '#fff' }}
-                                    >
-                                        <CloseIcon fontSize="small" />
-                                    </IconButton>
-                                </div>
-                            ) : null
-                        ))}
-                    </div>
-                )}
-            </div>
-        );
-    };
-
-	const handleClearSubmit = async () => {
-		if (!optionA || !explanationA || !optionB || !explanationB || !optionC || !explanationC || !optionD || !explanationD
-			|| !question || !CorrectOption || !difficulty
-		) {
-			setErrorMessage('Please fill in the required fields');
+		if (snapshot.empty) {
+			console.log('No matching documents.');
 			return;
 		}
+
+		// Assuming you want the ID of the first matching document
+		const docId = snapshot.docs[0].id;
+		console.log(`Matching document ID: ${docId}`);
+		return docId;
+
+	} catch (error) {
+		console.error("Error querying documents:", error);
+	}
+}
+
+
+function Form({ token, questionData, tags, setTags }) {
+	const [comboBoxCount, setComboBoxCount] = useState(1);
+	const [selectedTags, setSelectedTags] = useState(questionData.selectedTags || []);
+	const [question, setQuestion] = useState(questionData.question || '');
+	const [optionA, setOptionA] = useState(questionData.answers["a"] || '');
+	const [optionB, setOptionB] = useState(questionData.answers["b"] || '');
+	const [optionC, setOptionC] = useState(questionData.answers["c"] || '');
+	const [optionD, setOptionD] = useState(questionData.answers["d"] || '');
+	const [optionE, setOptionE] = useState(questionData.answers["e"] || '');
+	const [optionF, setOptionF] = useState(questionData.answers["f"] || '');
+	const [explanationA, setExplanationA] = useState(questionData.explanations["a"] || '');
+	const [explanationB, setExplanationB] = useState(questionData.explanations["b"] || '');
+	const [explanationC, setExplanationC] = useState(questionData.explanations["c"] || '');
+	const [explanationD, setExplanationD] = useState(questionData.explanations["d"] || '');
+	const [explanationE, setExplanationE] = useState(questionData.explanations["e"] || '');
+	const [explanationF, setExplanationF] = useState(questionData.explanations["f"] || '');
+	const [CorrectOption, setCorrectOption] = useState(0);
+	const [difficulty, setDifficulty] = useState(questionData.difficulty || '');
+	const [errorMessage, setErrorMessage] = useState('');
+	const [image, setImageUpload] = useState(null);
+	const [imageUrl, setImageUrl] = useState(null);
+	const [previewVisible, setPreviewVisible] = useState(false);
+	const [previewPageVisible, setPreviewPageVisible] = useState(false);
+	const [version, setVersion] = useState(questionData.version);
+	// const QID=findDocumentId(questionData.question);
+	// console.log(QID);
+	const difficulties = obj[version].difficulty;
+	const init_text = questionData.question;
+	// console.log(init_text);
+	useEffect(() => {
+		const correctAnswerMap = {
+			"a": 1,
+			"b": 2,
+			"c": 3,
+			"d": 4,
+			"e": 5,
+			"f": 6
+		};
+		setCorrectOption(correctAnswerMap[questionData.correctAnswer] || 0);
+		if (questionData.difficulty == "easy" || questionData.difficulty == "beginner") {
+			setDifficulty(0);
+		}
+		else if (questionData.difficulty == "medium" || questionData.difficulty == "intermediate") {
+			setDifficulty(1);
+		}
+		else if (questionData.difficulty == "hard" || questionData.difficulty == "advanced") {
+			setDifficulty(2);
+		}
+	}, [questionData]);
+
+	const handleComboBoxChange = (event, value, comboBoxId) => {
+		setSelectedTags((prevSelectedTags) => {
+			const updatedTags = [...prevSelectedTags];
+			updatedTags[comboBoxId] = value;
+			return updatedTags;
+		});
+	};
+
+	const togglePreview = () => {
+		setPreviewVisible(!previewVisible);
+	};
+
+	const togglePreviewPage = () => {
+		if (!previewPageVisible) {
+			setPreviewVisible(true);
+		} else {
+			setPreviewVisible(false);
+		}
+		setPreviewPageVisible(!previewPageVisible);
+	};
+
+	const handleLogButtonClick = () => {
+		if (selectedTags.length === 0) {
+			setErrorMessage('Please select a tag from the list.');
+			return;
+		}
+
+		const isAllTagsValid = selectedTags.every(tag => tags.map(t => t.label).includes(tag));
+
+		if (!isAllTagsValid) {
+			setErrorMessage('Please select tags only from the list.');
+			return;
+		}
+
+		setSelectedTags([...selectedTags, ...selectedTags]);
+
+		// Remove selected tags from the available tags
+		const updatedTags = tags.filter(tag => !selectedTags.includes(tag.label));
+		setTags(updatedTags);
+		setSelectedTags([]);
+	};
+
+	const removeTagFromHistory = (indexToRemove) => {
+		const updatedSelectedTags = selectedTags.filter((_, index) => index !== indexToRemove);
+		setSelectedTags(updatedSelectedTags);
+		setTags(prevTags => [...prevTags, ...tags.filter(tag => tag.label === selectedTags[indexToRemove])]);
+	};
+
+	const handleChange = (event) => {
+		setDifficulty(event.target.value);
+	};
+
+	const handleChange2 = (event) => {
+		setCorrectOption(event.target.value);
+	};
+
+	const selectedTagObjects = selectedTags.map(tagLabel => tags.find(tag => tag.label === tagLabel));
+
+	const displayselectedTags = () => {
+		return (
+			<div>
+				{tags.length === 0 ? (
+					<p>Loading tags...</p>
+				) : (
+					<div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap' }}>
+						{selectedTagObjects.map((tag, tagIndex) => (
+							tag ? (
+								<div
+									key={tagIndex}
+									style={{
+										display: 'inline-flex',
+										alignItems: 'center',
+										backgroundColor: tag.color,
+										color: '#fff',
+										paddingLeft: '10px',
+										paddingRight: '10px',
+										paddingTop: '5px',
+										paddingBottom: '5px',
+										borderRadius: '15px',
+										marginBottom: '5px',
+										marginRight: '10px',
+									}}
+								>
+									{tag.label}
+									<IconButton
+										size="small"
+										onClick={() => removeTagFromHistory(tagIndex)}
+										style={{ marginLeft: '8px', color: '#fff' }}
+									>
+										<CloseIcon fontSize="small" />
+									</IconButton>
+								</div>
+							) : null
+						))}
+					</div>
+				)}
+			</div>
+		);
+	};
+
+	const handleClearSubmit = async () => {
+		// if (!optionA || !explanationA || !optionB || !explanationB || !optionC || !explanationC || !optionD || !explanationD
+		// 	|| !question || !CorrectOption || !difficulty
+		// ) {
+		// 	setErrorMessage('Please fill in the required fields');
+		// 	return;
+		// }
 		const questionField = document.getElementById('Question');
 		if (questionField && !questionField.value.trim()) {
 			// Display an alert if the required field is not filled
@@ -289,8 +293,7 @@ function Form({ token, questionData,tags ,setTags}) {
 		function proceedWithData() {
 			console.log(image_url);
 
-			const formData = constructFormData(CorrectOption, difficulty, selectedTags, image_url);
-
+			constructFormData(init_text, CorrectOption, difficulty, selectedTags, image_url);
 			// if (formData.correctAnswer==1)
 			// formData.correctAnswer='a';
 			// else if(formData.correctAnswer==2)
@@ -300,35 +303,40 @@ function Form({ token, questionData,tags ,setTags}) {
 			// else if(formData.correctAnswer==4)
 			// formData.correctAnswer='d';
 
-			console.log(typeof formData);
-			// CODE TO SUBMIT THE FORM DATA TO THE SERVER
-			const list_to_be_sent = []
-			list_to_be_sent.push(formData);
-			
+			// console.log(typeof formData);
+			// // CODE TO SUBMIT THE FORM DATA TO THE SERVER
+			// const list_to_be_sent = []
+			// list_to_be_sent.push(formData);
+
+
+
 			// console.log(JSON.stringify(list_to_be_sent));
 
-			console.log(token.token);
-			fetch('http://localhost:3001/api/questions',
-				{
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json',
-						Authorization: `Bearer ${token.token}`,
-					},
-					body: JSON.stringify(list_to_be_sent)
-				})
-				.then(response => {
-					if (!response.ok) {
-						throw new Error('Network response was not ok');
-					}
-					return response.json();
-				})
-				.then(data => {
-					console.log('Success (ok 200):', data);
-				})
-				.catch(error => {
-					console.error('Error:', error);
-				});
+			// console.log(token.token);
+			// fetch('http://localhost:3001/api/questions',
+			// 	{
+			// 		method: 'POST',
+			// 		headers: {
+			// 			'Content-Type': 'application/json',
+			// 			Authorization: `Bearer ${token.token}`,
+			// 		},
+			// 		body: JSON.stringify(list_to_be_sent)
+			// 	})
+			// 	.then(response => {
+			// 		if (!response.ok) {
+			// 			throw new Error('Network response was not ok');
+			// 		}
+			// 		return response.json();
+			// 	})
+			// 	.then(data => {
+			// 		console.log('Success (ok 200):', data);
+			// 	})
+			// 	.catch(error => {
+			// 		console.error('Error:', error);
+			// 	});
+
+
+
 
 			setSelectedTags([]);
 			setTags(initialTags);
@@ -873,7 +881,7 @@ function Answer() {
 		</div>
 	);
 }
-const constructFormData = (CorrectOption, difficulty, selectedTags, imageUrl) => {
+async function constructFormData(initial_text, CorrectOption, difficulty, selectedTags, imageUrl) {
 	const question = document.getElementById('Question').value;
 	const optionA = document.getElementById('Option-A').value;
 	const optionB = document.getElementById('Option-B').value;
@@ -891,7 +899,12 @@ const constructFormData = (CorrectOption, difficulty, selectedTags, imageUrl) =>
 	const explanationF = document.getElementById('Explanation-F').value;
 	const ImageUrl = imageUrl;
 
-	console.log(imageUrl)
+	console.log(typeof optionA);
+	console.log(optionB);
+
+
+
+	// console.log(imageUrl)
 
 	// var newDif;
 	// if (difficulty === EASY_DIFFICULTY) {
@@ -902,39 +915,73 @@ const constructFormData = (CorrectOption, difficulty, selectedTags, imageUrl) =>
 	// 	newDif = 'hard'
 	// }
 
-	console.log(correctOption);
+	let updates = {};
+	if (!updates.answers) {
+		updates.answers = {};
+	}
 
-	const formData = {
-		question: question,
-		answers: {
-			a: optionA,
-			b: optionB,
-			c: optionC,
-			d: optionD,
-			e: optionE,	
-			f: optionF
-		},
-		correctAnswer: correctOption,
-		difficulty: difficulty,
-		explanations: {
-			a: explanationA,
-			b: explanationB,
-			c: explanationC,
-			d: explanationD,
-			e: explanationE,
-			f: explanationF
-		},
-		selectedTags: selectedTags.flat().map(tag => tag.label),
-		image: imageUrl,
-		// user: 'divu@gmail.com'
-	};
+	if (!updates.explanations) {
+		updates.explanations = {};
+	}
 
-	return formData;
+	// Dynamically add fields to the update object based on their truthiness
+	if (question) updates.question = question;
+	if (optionA) updates.answers['a'] = optionA;
+	if (optionB) updates.answers.b = optionB;
+	if (optionC) updates.answers.c = optionC;
+	if (optionD) updates.answers.d = optionD;
+	if (optionE) updates.answers.e = optionE;
+	if (optionF) updates.answers.f = optionF;
+
+	if (explanationA) updates.explanations.a = explanationA;
+	if (explanationB) updates.explanations.b = explanationB;
+	if (explanationC) updates.explanations.c = explanationC;
+	if (explanationD) updates.explanations.d = explanationD;
+	if (explanationE) updates.explanations.e = explanationE;
+	if (explanationF) updates.explanations.f = explanationF;
+
+	updates.correctAnswer = CorrectOption; // Assuming CorrectOption holds the selected answer letter
+	updates.difficulty = difficulty;
+	updates.selectedTags = selectedTags;
+
+	const questionsCollectionRef = collection(getFirestore(), "questions");
+
+	// Construct a query against the collection
+	const q = query(questionsCollectionRef);
+
+	// Execute the query
+	let querySnapshot = await getDocs(q);
+	if (querySnapshot.empty) {
+		console.log("No matching document found.");
+		return;
+	}
+
+	// Filter documents client-side
+	let docId=1;
+	for (const doc of querySnapshot.docs) {
+		const data = doc.data();
+		// Assuming 'questions' is an array of objects and 'question' is a field within those objects
+		if(data.question===initial_text)
+		{
+			docId=doc.id;
+		}
+
+	}
+
+	console.log("pahuch gye");
+	// Update the document
+	const docToUpdate = docId;
+	console.log(docToUpdate);
+	await updateDoc(doc(getFirestore(), "questions", docId) , updates);
+
+	
+
+	// return updates;
 };
 
 
 
-function UpdateQuestion({ questionData, setquestions, setDownloadList, token, setToken, selectedRole, setSelectedRole ,tags,setTags}) {
+function UpdateQuestion({ questionData, setquestions, setDownloadList, token, setToken, selectedRole, setSelectedRole, tags, setTags }) {
 	// setquestions([])
 
 	useEffect(() => {
@@ -955,7 +1002,8 @@ function UpdateQuestion({ questionData, setquestions, setDownloadList, token, se
 					// console.log(token);
 					setToken(token1);
 				});
-				const userDoc = await getDoc(doc(db, 'users', user.uid));
+				const userDoc = await getDoc(doc(getFirestore(), 'users', user.uid));
+				// console.log("know");
 				if (userDoc.exists()) {
 					const userData = userDoc.data();
 					setSelectedRole(userData.role);
@@ -1039,7 +1087,7 @@ function UpdateQuestion({ questionData, setquestions, setDownloadList, token, se
 	// console.log("Selected Role: ", selectedRole);
 	// console.log(questionData);
 
-	if (!selectedRole.includes("Administrator") ) {
+	if (!selectedRole.includes("Administrator")) {
 		return (
 			<Container maxWidth="sm">
 				<Paper elevation={3} style={{ padding: '20px', marginTop: '20px' }}>
@@ -1071,7 +1119,7 @@ function UpdateQuestion({ questionData, setquestions, setDownloadList, token, se
 					>
 						Update a Question
 					</Typography>
-					<Form token={token} questionData={questionData} tags={tags} setTags={setTags}/>
+					<Form token={token} questionData={questionData} tags={tags} setTags={setTags} />
 				</CardContent>
 			</Card>
 		</div>

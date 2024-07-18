@@ -1,84 +1,118 @@
-﻿# Virtual Labs Question Bank
+# VLabs Question Bank
 
-## Introduction
+Welcome to the VLabs Question Bank user documentation. This guide will help you navigate and utilize the various features of our platform.
 
-The Virtual Labs Question Bank allows users to access a wide array of questions. They can download these questions or even upload their own.
+## Getting Started
 
-## Target User
+### Login/Signup
 
-This service is targeted towards teachers/professors at all levels of education.
+1. **Access the Login Page:** [VLabs Login](https://vlabs-question-bank.web.app/login)
+2. **Login:** Enter your existing username and password and click on "Enter".
+3. **Signup:**
+   - Fill in your email ID and password (at least 6 characters) and click on "Next".
+   - Select your roles: "Administrator", "Contributor", "Question User", or "Quiz Participant". You can choose multiple roles at once.
 
-## User Interface
+### Navigation
 
+Upon logging in, you will see all available functionalities on the NAVBAR. Depending on your role, you can access different features.
 
-Visit https://vlabs-question-bank.web.app/login for starting the Application
+## Features
 
+### Common Features (Available for all roles)
 
-1. **Login**
+1. **Search for Questions:** Available for "Administrator", "Contributor", "Question User", and "Quiz Participant".
+2. **Add to Download List:** Available for "Administrator", "Contributor", "Question User", and "Quiz Participant".
+3. **View Questions:** Available for "Administrator", "Contributor", "Question User", and "Quiz Participant".
+4. **Download Questions:** Available for "Administrator", "Contributor", "Question User", and "Quiz Participant".
 
-    Users land on the login screen where they can:
-    - Log in with their email ID and password or use Google login.
-    - EMAIL must have @
-    - Password must be a minimum of six characters
-    - Unfollowing of above constraints give errors
-    - Sign up if they don’t have an account.
-    - To sign up click on "I don't have an account option"
-    - Click on Google sign in Button on Login Page to Google Sign In the service 
+### Administrator-Only Features
 
+1. **Update Questions**
+2. **Add Question to Database**
+3. **Populate Database**
+4. **Take Quiz:** Also available for "Quiz Participant"
 
-    ![Login Screen](images/login.png)
+### Contributor-Only Features
 
+1. **Add Question to Database**
+2. **Take Quiz:** Also available for "Quiz Participant"
 
-2. **Question Search**
+### Quiz Participant-Only Features
 
-    Users can search for questions by:
-    - Tags
-    - Difficulty level.
-    - Filter by the person who submitted the question.
-    - Select the number of questions per page.
-    
-    Upon clicking the ‘+’ sign next to a question, it is added to the Download List. Clicking again changes it to ‘-‘, removing the question.
+1. **Take Quiz**
 
-    ![Search Page](images/img_1.png)
+## Using the Platform
 
+1. **Navigation:** Use the navbar to navigate through different screens and functionalities as described above.
+2. **Access Restricted Pages:** If you try to access a page not assigned to your role, an "Access Restricted" message will be displayed. Navigate to [VLabs Login](https://vlabs-question-bank.web.app/login) to regain control.
 
+## Search Functionality
 
-    ![Sample Question](images/img_2.png)
+1. **Version 1 Questions:** Allows multidimensional search (by tags, difficulty, and email).
+2. **Version 2 Questions:** Search by tags or multitags.
+3. **Display:** All questions from both versions will be displayed on the screen. You can choose to view a particular question in the QUESTION view screen.
 
-    Clicking on a question displays it in full with options and correct answers. Images can be enlarged by clicking on them. Users can add questions to their list from this page.
+## Download Questions
 
+1. **Download Page:** Click the download button on the Downloads Page to download questions in JSON format.
 
+## Adding Questions
 
-3. **Download List**
+1. **Version 1 Questions:** Can be added using the ADD QUESTIONS screen.
+2. **Version 2 Questions:** Populated using the "GitHub Link Onboarding" feature.
 
-    Selected questions for download are displayed here. Users can remove a question by clicking the ‘x’ next to it. Clicking "Download Now" downloads a JSON file with the questions.
+## Populate Database
 
-    ![Download Page](images/img_3.png)
+Administrators can populate the database using the "Populate Database" page.
 
-    ![Downloaded JSON](images/JSON.jpeg)
+1. **Select an Experiment GitHub Repository Link:** Ensure the link does not contain "/main".
+2. **Fetch Questions:** Click on the Fetch button to populate the QUESTION database with all VERSION 2 questions from all possible "assessment" files in GitHub repositories (e.g., pretest.json).
+3. **Error Handling:**
+   - If no JSON files are found, an error message will be displayed.
+   - If JSON files are found but do not have a valid version 2, they will not be populated, and an error message will be displayed.
+   - If JSON files follow version 2, a "SUCCESS" message will be displayed in green.
+4. **Google Sheet Columns:** "Experiment Name", "Tags", and "Source Repo" are used in database population.
 
-4. **Add Question**
+## Quiz Interface
 
-    Users can add questions to the database by providing details such as the question, options, explanations, correct answer, tags, and difficulty level.
+1. **Select Tags:** Users can select tags and appear for a quiz based on the selected tags.
+2. **Start Quiz:** Click the "Start Quiz" button after selecting relevant tags. You will be directed to the /exam/0 page to start with question 1. The NAVBAR disappears to create an "Exam-like" interface.
+3. **Exam Navigation:**
+   - Large and medium devices: Navigation pane on the right.
+   - Small devices: Top menu to display the navigation pane.
+4. **End Test:** Click the "End Test" button to complete the quiz.
+5. **Results:** You will be directed to the /results page with your score. Click "Review Test" to review your answers.
 
-    ![Question Submit Page](images/img_4.png)
+### Review Test
 
+The interface of REVIEW is mostly the same as the EXAM except for the following differences:
 
-    Users can as well see the preview of the questions added (Markdown,image,etc) by clicking on Preview/Preview Page button on Add Question Screen.
+1. Not attempted questions are shown with "Not attempted" text on the right side of the question number.
+2. Wrong questions are shown with a "CROSS".
+3. Correct questions are shown with a "TICK".
+4. Explanation of options and the correct answer in green is provided below each question.
 
-    ![Preview](images/img_5.png)
+## Updating Questions
 
+Administrators can update questions by clicking the "Update" button on the top right of the Question VIEW screen.
 
-5. **Profile Page**
+1. Present question entries will be displayed in boxes.
+2. Modify any entry as needed.
+3. Click "Submit" to modify the question.
 
-    Users can view their credits, gained by submitting questions and spent on downloads. They can also change their password.
-    To call APIs , Access Tokens are required which can be copied from the profile page.
+---
 
-    ![Profile Page](images/profile.png)
+For any further assistance or queries, feel free to contact our support team.
 
+Happy Learning!
 
-6. **Log Out**
+# Note
 
-    Users can log out from the navbar, which redirects them to the login page.
+1. The Selecting of ROLES is kept only for testing purposes
+2. After testing , removal of this feature will take place
+3. By default any new USER EMAIL , will get then role of "Question User"
+4. If he needs other roles , only Administrator can grant them
+5. To implement this go to https://console.firebase.google.com/project/vlabs-question-bank/firestore/
+   In the Collection named "Users" , find the EMAIL ID for whom you want to provide Extra ROLES . Add roles names to KEY "role" in the document by clicking "PLUS" sign beside it
 
-    ![Logout Option](images/logout.png)
+   ![Image](./guidesline.png)

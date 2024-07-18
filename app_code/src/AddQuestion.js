@@ -254,11 +254,11 @@ function Form(token) {
 				"questions": list_to_be_sent
 			};
 			console.log(token.token);
-			fetch('http://vlabs-question-bank.el.r.appspot.com/api/questions',
+			fetch('http://localhost:3001/api/questions',
 				{
 					method: 'POST',
 					headers: {
-						'Content-Type': 'application/json',
+					    'Content-Type': 'application/json',
 						Authorization: `Bearer ${token.token}`,
 					},
 					body: JSON.stringify(requestBody)
