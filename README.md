@@ -1,118 +1,120 @@
-# VLabs Question Bank
+# Virtual Labs Question Bank Service
 
-Welcome to the VLabs Question Bank user documentation. This guide will help you navigate and utilize the various features of our platform.
+## Introduction
 
-## Getting Started
+The Virtual Labs Question Bank Service is a Hosted Web and Mobile Application Service that is helpful for Virtual Lab users as well as Teachers/Professors to retrieve questions based on Tag Search and also contribute to service by adding questions.
+  
 
-### Login/Signup
+## Target Audience
 
-1. **Access the Login Page:** [VLabs Login](https://vlabs-question-bank.web.app/login)
-2. **Login:** Enter your existing username and password and click on "Enter".
-3. **Signup:**
-   - Fill in your email ID and password (at least 6 characters) and click on "Next".
-   - Select your roles: "Administrator", "Contributor", "Question User", or "Quiz Participant". You can choose multiple roles at once.
+The Virtual Labs Workflow tool is designed for members of Virtual Labs and the other users which Virtual Labs may deem authorized. The primary user group includes the people working on questions display of Virtual Labs.
 
-### Navigation
 
-Upon logging in, you will see all available functionalities on the NAVBAR. Depending on your role, you can access different features.
+## Features Overview
 
-## Features
+### 1. Question Upload (Visually)
+- Description: Users can upload questions by entering them in the Add-Question Screen.
 
-### Common Features (Available for all roles)
+### 2. Preview Question while adding the question
+- Description: Users can preview how the question will look.
 
-1. **Search for Questions:** Available for "Administrator", "Contributor", "Question User", and "Quiz Participant".
-2. **Add to Download List:** Available for "Administrator", "Contributor", "Question User", and "Quiz Participant".
-3. **View Questions:** Available for "Administrator", "Contributor", "Question User", and "Quiz Participant".
-4. **Download Questions:** Available for "Administrator", "Contributor", "Question User", and "Quiz Participant".
+### 3. Image Upload in Questions
+- Description: Users can upload images to questions.
 
-### Administrator-Only Features
+### 4. Markdown Input of Questions
+- Description: Users can use Markdown while adding Question Text to facilitate mathematical equations and formulae.
 
-1. **Update Questions**
-2. **Add Question to Database**
-3. **Populate Database**
-4. **Take Quiz:** Also available for "Quiz Participant"
+### 5. Question View (Visually)
+- Description: Users can view questions visually by visiting the Display-Question Screen.
 
-### Contributor-Only Features
+### 6. Navigating Questions
+- Description: Users can navigate between questions by clicking on buttons.
 
-1. **Add Question to Database**
-2. **Take Quiz:** Also available for "Quiz Participant"
+### 7. Question Extraction (API)
+- Description: Users can extract questions individually and in bulk using an API that exports questions in a prescribed format.
 
-### Quiz Participant-Only Features
+### 8. Question Upload (API)
+- Description: Questions can be uploaded individually or in bulk using an API that imports questions in a prescribed format.
 
-1. **Take Quiz**
+### 9. General User Authorization
+- Description: Authorization for general users to view all questions without credit restrictions.
 
-## Using the Platform
+### 10. Authorization while API access
+    - Description:
+      1. General Users are authorized through access tokens passed as HEADERS to API calls.
+      2. Other applications can make API calls using these access tokens.
 
-1. **Navigation:** Use the navbar to navigate through different screens and functionalities as described above.
-2. **Access Restricted Pages:** If you try to access a page not assigned to your role, an "Access Restricted" message will be displayed. Navigate to [VLabs Login](https://vlabs-question-bank.web.app/login) to regain control.
+### 11. Tag Attachment
+- Description: Questions can be tagged with keywords that describe their properties.
 
-## Search Functionality
+### 12. Search
+- Description: Users can search for relevant entries by typing initials or related information.
 
-1. **Version 1 Questions:** Allows multidimensional search (by tags, difficulty, and email).
-2. **Version 2 Questions:** Search by tags or multitags.
-3. **Display:** All questions from both versions will be displayed on the screen. You can choose to view a particular question in the QUESTION view screen.
+### 13. Retrieve questions using multidimensional Tag Classification
+- Description: Users and applications can retrieve questions based on tags, contributor’s email, difficulty, or a combination of these via API calls.
 
-## Download Questions
+### 14. Multidimensional Tag Classification
+- Description: Users can retrieve questions based on multiple levels of filtering using tags, difficulty, and contributor’s email.
 
-1. **Download Page:** Click the download button on the Downloads Page to download questions in JSON format.
+### 15. Automatic Tag Suggestion
+- Description: Users can type tag initials, and matching tags are automatically displayed.
 
-## Adding Questions
+### 16. Download Questions
+- Description: Users can download selected questions singly or in bulk.
 
-1. **Version 1 Questions:** Can be added using the ADD QUESTIONS screen.
-2. **Version 2 Questions:** Populated using the "GitHub Link Onboarding" feature.
+### 17. API Documentation Access
+- Description: Users can access API documentation from the Web Application.
 
-## Populate Database
+### 18. User Profile Management
+    - Description:
+      1. Allow users to change passwords.
+      2. Provide the ability to copy Access tokens used in API calls.
 
-Administrators can populate the database using the "Populate Database" page.
+### 19. Register
+- Description: New users/contributors can register in the system.
 
-1. **Select an Experiment GitHub Repository Link:** Ensure the link does not contain "/main".
-2. **Fetch Questions:** Click on the Fetch button to populate the QUESTION database with all VERSION 2 questions from all possible "assessment" files in GitHub repositories (e.g., pretest.json).
-3. **Error Handling:**
-   - If no JSON files are found, an error message will be displayed.
-   - If JSON files are found but do not have a valid version 2, they will not be populated, and an error message will be displayed.
-   - If JSON files follow version 2, a "SUCCESS" message will be displayed in green.
-4. **Google Sheet Columns:** "Experiment Name", "Tags", and "Source Repo" are used in database population.
+### 20. Populate Database
+- Description: Admin can add ONBOARD github repos content onto database
 
-## Quiz Interface
+### 21. Role Separation 
+- Description : Functionalities can be accessed based on ROLES of users
 
-1. **Select Tags:** Users can select tags and appear for a quiz based on the selected tags.
-2. **Start Quiz:** Click the "Start Quiz" button after selecting relevant tags. You will be directed to the /exam/0 page to start with question 1. The NAVBAR disappears to create an "Exam-like" interface.
-3. **Exam Navigation:**
-   - Large and medium devices: Navigation pane on the right.
-   - Small devices: Top menu to display the navigation pane.
-4. **End Test:** Click the "End Test" button to complete the quiz.
-5. **Results:** You will be directed to the /results page with your score. Click "Review Test" to review your answers.
+### 22. Quiz Interface
+- Description : Users can take Quiz through the interface , and review their scores!
 
-### Review Test
+### 23. Update Question (Visually)
+- Description : Administrators can update questions with changing prefilled fields as seen in the screen 
 
-The interface of REVIEW is mostly the same as the EXAM except for the following differences:
+## DOCS
 
-1. Not attempted questions are shown with "Not attempted" text on the right side of the question number.
-2. Wrong questions are shown with a "CROSS".
-3. Correct questions are shown with a "TICK".
-4. Explanation of options and the correct answer in green is provided below each question.
+| DOCUMENT                                      | DESCRIPTION                                                                                                           |
+| --------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| [User Documentation](./app_code/user_doc.md)      | Comprehensive user documentation for Virtual Labs Question Bank Service
+| [Technical Documentation](./app_code/tech_doc.md) | Detailed technical documentation providing insights into the architecture, technologies, and API details of the tool. |
 
-## Updating Questions
+## Running the Applications
 
-Administrators can update questions by clicking the "Update" button on the top right of the Question VIEW screen.
+### Frontend
+Run commands
 
-1. Present question entries will be displayed in boxes.
-2. Modify any entry as needed.
-3. Click "Submit" to modify the question.
+1. ```npm install``` to setup
 
----
+2. ```npm run start``` to start the development server
 
-For any further assistance or queries, feel free to contact our support team.
+### Backend
 
-Happy Learning!
+1. ```npm install``` to setup
 
-# Note
+2. ```node handleAPI.js``` to launch the express application.
 
-1. The Selecting of ROLES is kept only for testing purposes
-2. After testing , removal of this feature will take place
-3. By default any new USER EMAIL , will get then role of "Question User"
-4. If he needs other roles , only Administrator can grant them
-5. To implement this go to https://console.firebase.google.com/project/vlabs-question-bank/firestore/
-   In the Collection named "Users" , find the EMAIL ID for whom you want to provide Extra ROLES . Add roles names to KEY "role" in the document by clicking "PLUS" sign beside it
+## Deployment 
 
-   ![Image](./guidesline.png)
+1. **Frontend**
+   - Frontend REACT APP has been deployed in Firebase 
+
+2. **Backend**
+   - Backend Express JS app has been deployed on Google App Engine
+
+
+
+
