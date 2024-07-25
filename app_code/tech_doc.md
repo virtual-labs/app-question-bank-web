@@ -89,13 +89,13 @@ graph TD;
 
 ### Installation Steps
 #### React App
-1. Clone the repository: `git clone https://github.com/your-repo.git`
-2. Navigate to the React app directory: `cd your-react-app`
+1. Clone the repository: `git clone https://github.com/virtual-labs/app-question-bank-web.git`
+2. Navigate to the React app directory: `cd app_code`
 3. Install dependencies: `npm install`
 
 #### Express Server
-1. Clone the repository: `git clone https://github.com/your-repo.git`
-2. Navigate to the Express server directory: `cd your-express-server`
+1. Clone the repository: `git clone https://github.com/virtual-labs/svc-question-bank.git`
+2. Navigate to the Express server directory: `cd svc_code`
 3. Install dependencies: `npm install`
 
 ### Running the Application
@@ -565,7 +565,7 @@ AUTOMATED TESTING is done using SELENIUM along with Pytest as framework
 
 ### 7. Introduce Versions in all Questions of Github Repos
 - Many present repos have a good amount of questions but they do not adhere to any VERSION . 
-- As a result they cannot be onboarded 
+- As a result they cannot be onboarded
 
 
 ## Maintenance Considerations

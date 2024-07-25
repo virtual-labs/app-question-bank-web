@@ -7,8 +7,7 @@ The Virtual Labs Question Bank Service is a Hosted Web and Mobile Application Se
 
 ## Target Audience
 
-The Virtual Labs Workflow tool is designed for members of Virtual Labs and the other users which Virtual Labs may deem authorized. The primary user group includes the people working on questions display of Virtual Labs.
-
+The Virtual Labs Question Bank Service is target for students and professors of Tier-2 and Tier-3 colleges for good and free educational content. It also helps users of Virtual Labs.
 
 ## Features Overview
 
@@ -111,9 +110,25 @@ Run commands
 
 1. **Frontend**
    - Frontend REACT APP has been deployed in Firebase 
+     Run the React App . Make sure to install "npm" 
+   - Write ```npm install -g firebase-tools```
+   - Login to the firebase account using ```firebase login```
+   - Navigate to React App Directory and write 
+      ``` firebase init ```
+   - Write ```npm run build```
+   - And finally ```firebase deploy```
+   
 
-2. **Backend**
-   - Backend Express JS app has been deployed on Google App Engine
+ 2. **Backend**
+   - Backend Express JS app has been deployed on Google App Engine.
+   - Initialize Google Cloud SDK.Authenticate with your Google account and set up the project:
+   ```gcloud auth login
+      gcloud config set project [YOUR_PROJECT_ID]```
+   - Deploy Your App to Google App Engine
+
+    Deploy your app using the Google Cloud SDK:
+    ```gcloud app deploy```
+
 
 
 
