@@ -73,7 +73,7 @@ The Virtual Labs Question Bank Service is target for students and professors of 
 - Description: New users/contributors can register in the system.
 
 ### 20. Populate Database
-- Description: Admin can add ONBOARD github repos content onto database
+- Description: Admin can ONBOARD github repos content onto database
 
 ### 21. Role Separation 
 - Description : Functionalities can be accessed based on ROLES of users
@@ -88,8 +88,8 @@ The Virtual Labs Question Bank Service is target for students and professors of 
 
 | DOCUMENT                                      | DESCRIPTION                                                                                                           |
 | --------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| [User Documentation](./app_code/user_doc.md)      | Comprehensive user documentation for Virtual Labs Question Bank Service
-| [Technical Documentation](./app_code/tech_doc.md) | Detailed technical documentation providing insights into the architecture, technologies, and API details of the tool. |
+| [User Documentation](./docs/user_doc.md)      | Comprehensive user documentation for Virtual Labs Question Bank Service
+| [Technical Documentation](./docs/tech_doc.md) | Detailed technical documentation providing insights into the architecture, technologies, and API details of the tool. |
 
 ## Running the Applications
 
@@ -109,12 +109,12 @@ Run commands
 ## Deployment 
 
 1. **Frontend**
-   - Frontend REACT APP has been deployed in Firebase 
-     Run the React App . Make sure to install "npm" 
+   - Frontend REACT APP has been deployed in Firebase, 
+     To run the React App . Make sure to install "npm" 
    - Write ```npm install -g firebase-tools```
    - Login to the firebase account using ```firebase login```
    - Navigate to React App Directory and write 
-      ``` firebase init ```
+     ``` firebase init ```
    - Write ```npm run build```
    - And finally ```firebase deploy```
    
@@ -122,8 +122,7 @@ Run commands
  2. **Backend**
    - Backend Express JS app has been deployed on Google App Engine.
    - Initialize Google Cloud SDK.Authenticate with your Google account and set up the project:
-   ```gcloud auth login
-      gcloud config set project [YOUR_PROJECT_ID]```
+    ```gcloud auth login```
    - Deploy Your App to Google App Engine
 
     Deploy your app using the Google Cloud SDK:
