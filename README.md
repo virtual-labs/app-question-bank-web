@@ -108,25 +108,100 @@ Run commands
 
 ## Deployment 
 
-1. **Frontend**
-   - Frontend REACT APP has been deployed in Firebase, 
-     To run the React App . Make sure to install "npm" 
-   - Write ```npm install -g firebase-tools```
-   - Login to the firebase account using ```firebase login```
-   - Navigate to React App Directory and write 
-     ``` firebase init ```
-   - Write ```npm run build```
-   - And finally ```firebase deploy```
-   
+# Frontend
+   ### Prerequisites
 
- 2. **Backend**
-   - Backend Express JS app has been deployed on Google App Engine.
-   - Initialize Google Cloud SDK.Authenticate with your Google account and set up the project:
-    ```gcloud auth login```
-   - Deploy Your App to Google App Engine
+1. **Node.js and npm**: Ensure that Node.js and npm are installed on your machine. You can download and install them from [Node.js official website](https://nodejs.org/).
+2. **Firebase CLI**: Install Firebase CLI globally using npm.
 
-    Deploy your app using the Google Cloud SDK:
-    ```gcloud app deploy```
+    ```sh
+    npm install -g firebase-tools
+    ```
+
+### Steps
+
+1. **Git Clone**: Make a local folder and git clone from "main" branch in it . 
+    ```sh
+    git clone "https://github.com/virtual-labs/app-question-bank-web.git"
+    ```
+
+2. **Login to Firebase**: Authenticate with your Firebase account. You can authenticate yourself in any directory.
+
+    ```sh
+    firebase login
+    ```
+
+3. **Initialize Firebase in your project**: Navigate to your React app directory and initialize Firebase.
+
+    ```sh
+    cd app-question-bank-web/frontend
+    firebase init
+    ```
+
+    During initialization:
+    - Select the Firebase features you want to set up (Hosting, Firestore, etc.).
+    - Choose your Firebase project from the list. Here "vlabs-question-bank"
+    - Set `build` as the public directory (default for React apps).
+    - Configure as a single-page app by selecting `yes`.
+
+4. **Build the React App**: Create a production build of your React app.
+
+    ```sh
+    npm run build
+    ```
+
+5. **Deploy to Firebase**: Deploy the built React app to Firebase Hosting.
+
+    ```sh
+    firebase deploy
+    ```
+
+    After deployment, Firebase CLI will provide a hosting URL where your app is accessible.
+
+
+ # Backend
+   ### Prerequisites
+
+1. **Google Cloud SDK**: Download and install the Google Cloud SDK from [Google Cloud SDK installation guide](https://cloud.google.com/sdk/docs/install).
+
+2. **Google Cloud Project**: Ensure you have a Google Cloud project set up. You can create one from the [Google Cloud Console](https://console.cloud.google.com/).
+
+### Steps
+
+1. **Initialize Google Cloud SDK**: Authenticate with your Google account and set up the project.
+
+    ```sh
+    gcloud auth login
+    ```
+
+    Set the project you want to use:
+
+    ```sh
+    gcloud config set project YOUR_PROJECT_ID
+    ```
+
+2. **Prepare your Express.js App for App Engine**: Ensure your `app.yaml` file is correctly configured in your Express.js app directory. An example `app.yaml` for a Node.js app is:
+
+    ```yaml
+    runtime: nodejs8
+
+    handlers:
+    - url: /.*
+      script: auto
+    ```
+
+3. **Deploy Your App to Google App Engine**: Use the Google Cloud SDK to deploy your app.
+
+    ```sh
+    gcloud app deploy
+    ```
+
+    After deployment, the CLI will provide a URL where your app is accessible.
+
+### Additional Configuration
+
+- **Environment Variables**: Use the `app.yaml` file to set environment variables for your Express.js app.
+- **Scaling and Performance**: Configure scaling and performance settings in your `app.yaml` file according to your app's needs.
 
 
 
